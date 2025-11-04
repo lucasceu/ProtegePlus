@@ -39,7 +39,7 @@ class RegisterActivity : AppCompatActivity() {
             val senha = senhaEditText.text.toString()
             val confirmaSenha = confirmaSenhaEditText.text.toString()
 
-            // Validações
+            // --- Validações ---
             if (nome.isEmpty() || email.isEmpty() || senha.isEmpty()) {
                 Toast.makeText(this, "Nome, E-mail e Senha são obrigatórios.", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -49,20 +49,29 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // Cria o objeto Usuario (CORRIGIDO com IdPessoa)
-            // Gera um ID baseado no tempo atual (só para teste)
-            val testId = (System.currentTimeMillis() % 100000).toInt() + 1 // Garante > 0
+            // --- NOVA VALIDAÇÃO (devido ao varchar(8)) ---
+            if (senha.length > 8) {
+                Toast.makeText(this, "A senha deve ter no máximo 8 caracteres.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            // --- FIM DA NOVA VALIDAÇÃO ---
 
+
+            // --- MUDANÇA NA CRIAÇÃO DO USUÁRIO ---
+            // Removemos o testId
+            // O IdPessoa = 0 (padrão) indica que é um novo usuário
+            // O DatabaseHelper vai ignorar o ID 0 e deixar o AUTOINCREMENT funcionar.
             val novoUsuario = Usuario(
-                IdPessoa = testId, // NOME CORRIGIDO (maiúsculas) e ID de teste
+                // IdPessoa = 0 (padrão)
                 nome = nome,
                 cpf = cpfOuMatricula.ifEmpty { null },
                 cargo = cargo.ifEmpty { null },
-                telefone = null,
-                empresa = null,
+                telefone = null, // Você não tinha campo de telefone no form
+                empresa = null, // Você não tinha campo de empresa no form
                 email = email,
-                senhaPlana = senha // **INSEGURO!**
+                senhaPlana = senha
             )
+            // --- FIM DA MUDANÇA ---
 
             // Tenta adicionar ao banco
             val sucesso = dbHelper.adicionarUsuario(novoUsuario)
@@ -72,8 +81,7 @@ class RegisterActivity : AppCompatActivity() {
                 Toast.makeText(this, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
-                // Pode ser erro de ID duplicado (PRIMARY KEY constraint) ou email duplicado
-                Toast.makeText(this, "Erro ao cadastrar. Verifique os dados ou tente outro e-mail/ID.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Erro ao cadastrar. Verifique os dados ou tente outro e-mail.", Toast.LENGTH_LONG).show()
             }
         }
     }

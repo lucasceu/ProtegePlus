@@ -6,13 +6,13 @@
     android:layout_height="match_parent"
     android:padding="16dp"
     android:background="@color/white"
-    tools:context=".ServicosEmergenciaActivity">
+    tools:context=".SintomasCategoriaActivity">
 
     <TextView
-        android:id="@+id/tvServicosHeader"
+        android:id="@+id/tvSintomasHeader"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Serviços de emergência"
+        android:text="sintomas - categorias"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -27,7 +27,7 @@
         android:textStyle="bold"
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvServicosHeader" />
+        app:layout_constraintTop_toBottomOf="@id/tvSintomasHeader" />
 
     <LinearLayout
         android:id="@+id/llLogout"
@@ -40,8 +40,8 @@
         android:focusable="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
+
         <TextView
-            android:id="@+id/tvLogoutText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Logout"
@@ -49,53 +49,24 @@
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginEnd="4dp"/>
+
         <ImageButton
-            android:id="@+id/ibLogoutIcon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_menu_logout"
             app:tint="#0277BD"
             tools:ignore="ContentDescription" />
+
     </LinearLayout>
 
-    <EditText
-        android:id="@+id/etPesquisar"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Pesquisar"
-        android:inputType="text"
-        android:padding="12dp"
-        android:background="@drawable/search_bar_background"
-        android:drawableStart="@android:drawable/ic_menu_search"
-        android:drawablePadding="8dp"
-        android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@id/tvProtegeTitle"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvEmergencia"
+        android:id="@+id/rvCategorias"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/etPesquisar"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/tvProtegeTitle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:listitem="@layout/list_item_emergencia" />
-
-    <TextView
-        android:id="@+id/tvEmptyState"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nenhum telefone de emergência cadastrado."
-        android:textSize="16sp"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/rvEmergencia"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="64dp" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+        tools:listitem="@layout/list_item_categoria"/> </androidx.constraintlayout.widget.ConstraintLayout>

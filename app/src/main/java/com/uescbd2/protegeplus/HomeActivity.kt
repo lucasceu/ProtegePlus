@@ -20,7 +20,12 @@ class HomeActivity : AppCompatActivity() {
 
         // ... (clique do cardSintomas fica igual) ...
         cardSintomas.setOnClickListener {
-            Toast.makeText(this, "Abrir Sintomas & Enfermidades", Toast.LENGTH_SHORT).show()
+            // Linha antiga:
+            // Toast.makeText(this, "Abrir Sintomas & Enfermidades", Toast.LENGTH_SHORT).show()
+
+            // Nova linha:
+            val intent = Intent(this, SintomasCategoriaActivity::class.java)
+            startActivity(intent)
         }
 
 

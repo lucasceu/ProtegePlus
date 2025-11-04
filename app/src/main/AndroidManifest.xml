@@ -34,6 +34,10 @@
             android:name=".ServicosEmergenciaActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".SintomasCategoriaActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

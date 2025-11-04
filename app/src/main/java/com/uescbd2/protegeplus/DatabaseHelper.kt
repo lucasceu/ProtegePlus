@@ -12,11 +12,13 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
-// Nome exato do arquivo no assets e nome do banco no dispositivo
-private const val DATABASE_NAME = "Bd_protege_v6_SQLite.db"
-// Incremente se atualizar o .db nos assets
-private const val DATABASE_VERSION = 1
-// Nome da tabela de usuários/pessoas
+// Assumindo que você vai renomear o "Verdadeiro.sql" para este nome de .db
+private const val DATABASE_NAME = "Bd_protege_v7_SQLite.db"
+// --- MUDANÇA CRÍTICA ---
+// Mudei para 3 para forçar o onUpgrade
+private const val DATABASE_VERSION = 4
+// --- FIM DA MUDANÇA ---
+
 private const val TABLE_PESSOA = "pessoa"
 
 class DatabaseHelper(private val context: Context) :
@@ -28,6 +30,8 @@ class DatabaseHelper(private val context: Context) :
         createDatabase()
     }
 
+    // ... (createDatabase, checkDatabase, copyDatabase, close continuam iguais) ...
+
     @Throws(IOException::class)
     fun createDatabase() {
         if (!checkDatabase()) {
@@ -35,13 +39,13 @@ class DatabaseHelper(private val context: Context) :
             this.close()
             try {
                 copyDatabase()
-                println("Banco de dados copiado com sucesso!")
+                println("Banco de dados v7 (Verdadeiro) copiado com sucesso!")
             } catch (e: IOException) {
-                println("Erro ao copiar banco de dados: ${e.message}")
+                println("Erro ao copiar banco de dados v7 (Verdadeiro): ${e.message}")
                 throw IOException("Erro ao copiar banco de dados", e)
             }
         } else {
-            println("Banco de dados já existe.")
+            println("Banco de dados v7 (Verdadeiro) já existe.")
         }
     }
 
@@ -76,47 +80,44 @@ class DatabaseHelper(private val context: Context) :
         // Vazio, pois o banco é copiado.
     }
 
+    // Esta função será chamada por causa da mudança de versão (2 -> 3)
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         if (newVersion > oldVersion) {
             println("Atualizando banco de dados da versão $oldVersion para $newVersion.")
             try {
-                File(dbPath).delete()
-                copyDatabase()
-                println("Banco de dados atualizado com sucesso.")
+                File(dbPath).delete() // Deleta o banco antigo (v7 bugado)
+                copyDatabase() // Copia o novo (v7 verdadeiro)
+                println("Banco de dados v7 (Verdadeiro) atualizado com sucesso.")
             } catch (e: IOException) {
-                println("Erro ao atualizar o banco de dados: ${e.message}")
+                println("Erro ao atualizar o banco de dados v7 (Verdadeiro): ${e.message}")
             }
         }
     }
 
-    // --- FUNÇÃO DE CADASTRO CORRIGIDA (usa "IdPessoa") ---
+    // --- FUNÇÃO DE CADASTRO CORRIGIDA ---
     fun adicionarUsuario(usuario: Usuario): Boolean {
         if (usuario.email.isBlank() || usuario.senhaPlana.isBlank() || usuario.nome.isBlank()) {
             println("Erro ao adicionar: Email, Senha ou Nome não podem ser vazios.")
             return false
         }
-        // Validação de teste: recusa ID 0 ou negativo
-        if (usuario.IdPessoa <= 0) { // NOME CORRIGIDO
-            println("Erro ao adicionar: ID de teste inválido (<= 0).")
-            return false
-        }
 
         val db = this.writableDatabase
         val values = ContentValues().apply {
-            // Usa o nome correto da coluna "IdPessoa"
-            put("IdPessoa", usuario.IdPessoa) // NOME CORRIGIDO (maiúsculas)
-            put("nome", usuario.nome)
-            put("cpf", usuario.cpf)
-            put("cargo", usuario.cargo)
-            put("telefone", usuario.telefone)
-            put("empresa", usuario.empresa)
-            put("email", usuario.email)
-            put("senha", usuario.senhaPlana) // **INSEGURO!**
+            // Usa os nomes da tabela "fonte da verdade"
+            put("Nome", usuario.nome)
+            put("CPF", usuario.cpf)
+            put("Cargo", usuario.cargo)
+            put("Telefone", usuario.telefone)
+            put("Empresa", usuario.empresa)
+            put("Email", usuario.email)
+            put("Senha", usuario.senhaPlana) // O objeto Usuario chama de senhaPlana
+
+            // NÃO colocamos o IdPessoa, pois ele é AUTOINCREMENT
         }
 
         return try {
             val newRowId = db.insertOrThrow(TABLE_PESSOA, null, values)
-            println("Usuário inserido com sucesso na tabela '$TABLE_PESSOA'. ID fornecido: ${usuario.IdPessoa}, Resultado: $newRowId") // NOME CORRIGIDO
+            println("Usuário inserido com sucesso na tabela '$TABLE_PESSOA'. Novo ID: $newRowId")
             db.close()
             newRowId != -1L
         } catch (e: SQLiteException) {
@@ -126,9 +127,8 @@ class DatabaseHelper(private val context: Context) :
         }
     }
 
-    // --- FUNÇÃO DE LOGIN (Sem alterações, já estava ok) ---
+    // --- FUNÇÃO DE LOGIN CORRIGIDA ---
     fun verificarLogin(email: String, senhaPlana: String): Boolean {
-        // ... (código igual ao anterior) ...
         if (email.isBlank() || senhaPlana.isBlank()) {
             return false
         }
@@ -138,15 +138,16 @@ class DatabaseHelper(private val context: Context) :
         var loginSucesso = false
 
         try {
-            val selection = "email = ?"
+            // Usa os nomes da tabela "fonte da verdade"
+            val selection = "Email = ?" // <-- MUDANÇA (Maiúscula)
             val selectionArgs = arrayOf(email)
-            val columns = arrayOf("senha") // **INSEGURO!**
+            val columns = arrayOf("Senha") // <-- MUDANÇA (Maiúscula)
 
             cursor = db.query(TABLE_PESSOA, columns, selection, selectionArgs, null, null, null)
 
             if (cursor != null && cursor.moveToFirst()) {
-                val senhaNoBanco = cursor.getString(cursor.getColumnIndexOrThrow("senha"))
-                if (senhaPlana == senhaNoBanco) { // **INSEGURO!**
+                val senhaNoBanco = cursor.getString(cursor.getColumnIndexOrThrow("Senha")) // <-- MUDANÇA
+                if (senhaPlana == senhaNoBanco) {
                     loginSucesso = true
                     println("Login bem-sucedido para: $email")
                 } else {
@@ -164,4 +165,43 @@ class DatabaseHelper(private val context: Context) :
         }
         return loginSucesso
     }
+
+    fun getTelefonesUteis(): List<TelefoneUtil> {
+        val listaTelefones = mutableListOf<TelefoneUtil>()
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+
+        val tabela = "telefonesuteis"
+        val colunas = arrayOf("IdTelefone", "Numero", "Unidadesaude")
+
+        try {
+            // Consulta a tabela 'telefonesuteis'
+            cursor = db.query(tabela, colunas, null, null, null, null, "Unidadesaude ASC")
+
+            if (cursor != null && cursor.moveToFirst()) {
+                val idCol = cursor.getColumnIndexOrThrow("IdTelefone")
+                val numCol = cursor.getColumnIndexOrThrow("Numero")
+                val unidadeCol = cursor.getColumnIndexOrThrow("Unidadesaude")
+
+                do {
+                    val id = cursor.getInt(idCol)
+
+                    // Lê como String, mesmo sendo INTEGER no DB, para ser mais seguro
+                    val numero = if (cursor.isNull(numCol)) null else cursor.getString(numCol)
+                    val unidade = if (cursor.isNull(unidadeCol)) null else cursor.getString(unidadeCol)
+
+                    listaTelefones.add(TelefoneUtil(id, numero, unidade))
+                } while (cursor.moveToNext())
+            }
+        } catch (e: Exception) {
+            println("Erro ao buscar telefones úteis: ${e.message}")
+        } finally {
+            cursor?.close()
+            db.close()
+        }
+        println("Telefones encontrados: ${listaTelefones.size}")
+        return listaTelefones
+    }
+
+
 }
