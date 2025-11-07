@@ -35,7 +35,23 @@
             android:exported="false" />
 
         <activity
-            android:name=".SintomasCategoriaActivity"
+            android:name=".GrupoCiapActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ListaItensActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".DetalheItemActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".VerificadorSintomasActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ResultadosEnfermidadesActivity"
             android:exported="false" />
 
     </application>

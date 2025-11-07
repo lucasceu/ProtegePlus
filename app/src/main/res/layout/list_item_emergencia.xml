@@ -55,6 +55,5 @@
                 tools:text="3694-1122" />
 
         </LinearLayout>
-
     </LinearLayout>
 </androidx.cardview.widget.CardView>
