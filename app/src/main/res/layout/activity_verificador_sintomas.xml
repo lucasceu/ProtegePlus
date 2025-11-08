@@ -7,57 +7,83 @@
     android:background="@color/white"
     tools:context=".VerificadorSintomasActivity">
 
-    <LinearLayout
-        android:id="@+id/llHeader"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
+
         <TextView
             android:id="@+id/tvHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Verificador de Sintomas"
+            android:fontFamily="@font/nunito_sans_regular"
             android:textSize="14sp" />
+
         <TextView
+            android:id="@+id/tvProtegeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PROTEGE +"
             android:textColor="#D32F2F"
             android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginTop="8dp" />
+            android:fontFamily="@font/nunito_sans_bold"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvHeader" />
+
         <LinearLayout
-            android:id="@+id/llLogout"
+            android:id="@+id/buttonLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
-            android:layout_gravity="end"
-            android:layout_marginTop="-30dp">
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvProtegeTitle"
+            app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textColor="@color/protegeTeal"
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textSize="18sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/buttonLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvProtegeTitle"
+            app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Logout"
-                android:textColor="#0277BD"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="4dp"/>
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:src="@drawable/ic_menu_logout"
-                app:tint="#0277BD"
-                tools:ignore="ContentDescription" />
+                android:textColor="@color/protegeTeal"
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textSize="18sp"/>
         </LinearLayout>
-    </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <EditText
         android:id="@+id/etBuscarSintoma"
@@ -69,10 +95,11 @@
         android:background="@drawable/search_bar_background"
         android:drawableStart="@android:drawable/ic_menu_search"
         android:drawablePadding="8dp"
+        android:fontFamily="@font/nunito_sans_regular"
         android:layout_marginTop="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toBottomOf="@id/llHeader"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -83,6 +110,7 @@
         android:text="Limpar Seleção"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:textColor="#0277BD"
+        android:fontFamily="@font/nunito_sans_semi_bold"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
         app:layout_constraintTop_toBottomOf="@id/etBuscarSintoma"
@@ -97,6 +125,7 @@
         android:backgroundTint="#D32F2F"
         android:textColor="@color/white"
         android:padding="12dp"
+        android:fontFamily="@font/nunito_sans_bold"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginBottom="16dp"

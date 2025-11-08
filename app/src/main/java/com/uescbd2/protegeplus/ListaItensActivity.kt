@@ -1,7 +1,9 @@
 package com.uescbd2.protegeplus
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -16,11 +18,31 @@ class ListaItensActivity : AppCompatActivity() {
     private lateinit var adapter: ItemCiapAdapter
     private lateinit var tvHeader: TextView
 
+    private lateinit var buttonLogin: LinearLayout
+    private lateinit var buttonLogout: LinearLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_lista_itens)
 
-        // Recebe os dados da Tela 1 (GrupoCiapActivity)
+        buttonLogin = findViewById(R.id.buttonLogin)
+        buttonLogout = findViewById(R.id.buttonLogout)
+
+        buttonLogin.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        buttonLogout.setOnClickListener {
+            val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+            with(sharedPreferences.edit()) {
+                putBoolean("isLoggedIn", false)
+                apply()
+            }
+            Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
+            updateButtonVisibility()
+        }
+
         val grupoId = intent.getIntExtra("GRUPO_ID", -1)
         val grupoNome = intent.getStringExtra("GRUPO_NOME") ?: "Itens"
 
@@ -28,60 +50,46 @@ class ListaItensActivity : AppCompatActivity() {
         rvListaItens = findViewById(R.id.rvListaItens)
         tvHeader = findViewById(R.id.tvHeader)
 
-        // Atualiza o título da tela
         tvHeader.text = grupoNome
 
-        // --- A LÓGICA "INTELIGENTE" ---
-        // Decide de qual tabela buscar os dados, baseado no ID do grupo
-
-        val listaDeItens: List<ItemCiap>
-
-        // ID 1 ("Sintomas") e 7 ("Doenças") vêm da 'tb_ciap'
-        if (grupoId == 1 || grupoId == 7) {
-            listaDeItens = dbHelper.getItensFromTbCiap(grupoId)
-        }
-        // ID 2 ("Procedimentos") vêm da 'procedimento_clinico'
-        else if (grupoId == 2) {
-            listaDeItens = dbHelper.getItensFromProcedimentoClinico(grupoId)
-        }
-        // Outros casos (não deve acontecer com nosso filtro)
-        else {
-            listaDeItens = emptyList()
+        val listaDeItens: List<ItemCiap> = if (grupoId == 1 || grupoId == 7) {
+            dbHelper.getItensFromTbCiap(grupoId)
+        } else if (grupoId == 2) {
+            dbHelper.getItensFromProcedimentoClinico(grupoId)
+        } else {
             Toast.makeText(this, "Grupo não reconhecido: $grupoId", Toast.LENGTH_SHORT).show()
+            emptyList()
         }
-        // --- FIM DA LÓGICA ---
 
-        // Configurar o Adapter
         rvListaItens.layoutManager = LinearLayoutManager(this)
         adapter = ItemCiapAdapter(this, listaDeItens) { itemClicado ->
-
-            // --- Ação de clique ---
-            // Se for Sintoma (1) ou Doença (7), abre a Tela 3 de Detalhes
             if (itemClicado.idGrupo == 1 || itemClicado.idGrupo == 7) {
                 val intent = Intent(this, DetalheItemActivity::class.java)
                 intent.putExtra("ITEM_CODIGO", itemClicado.codigo)
                 intent.putExtra("ITEM_NOME", itemClicado.nome)
                 startActivity(intent)
+            } else if (itemClicado.idGrupo == 2) {
+                Toast.makeText(this, "Nenhum detalhe adicional para procedimentos.", Toast.LENGTH_SHORT).show()
             }
-            // Se for Procedimento (2), não faz nada (ou mostra um Toast)
-            else if (itemClicado.idGrupo == 2) {
-                Toast.makeText(
-                    this,
-                    "Nenhum detalhe adicional para procedimentos.",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-            // TODO: Criar a DetalheItemActivity e passar o CÓDIGO
-            // val intent = Intent(this, DetalheItemActivity::class.java)
-            // intent.putExtra("ITEM_CODIGO", itemClicado.codigo)
-            // intent.putExtra("ITEM_NOME", itemClicado.nome)
-            // startActivity(intent)
         }
         rvListaItens.adapter = adapter
+    }
 
-        // Configura o logout
-        findViewById<LinearLayout>(R.id.llLogout).setOnClickListener {
-            Toast.makeText(this, "Logout clicado", Toast.LENGTH_SHORT).show()
+    override fun onResume() {
+        super.onResume()
+        updateButtonVisibility()
+    }
+
+    private fun updateButtonVisibility() {
+        val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+
+        if (isLoggedIn) {
+            buttonLogin.visibility = View.GONE
+            buttonLogout.visibility = View.VISIBLE
+        } else {
+            buttonLogin.visibility = View.VISIBLE
+            buttonLogout.visibility = View.GONE
         }
     }
 }

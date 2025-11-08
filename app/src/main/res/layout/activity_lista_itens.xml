@@ -13,6 +13,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="14sp"
+        android:fontFamily="@font/nunito_sans_regular"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="Sintomas e queixas" />
@@ -24,38 +25,56 @@
         android:text="PROTEGE +"
         android:textColor="#D32F2F"
         android:textSize="28sp"
-        android:textStyle="bold"
+        android:fontFamily="@font/nunito_sans_bold"
         android:layout_marginTop="8dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvHeader" />
 
     <LinearLayout
-        android:id="@+id/llLogout"
+        android:id="@+id/buttonLogin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:background="?android:attr/selectableItemBackground"
         android:clickable="true"
         android:focusable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:visibility="gone"
+        tools:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tvProtegeTitle"
+        app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Login"
+            android:textColor="@color/protegeTeal"
+            android:fontFamily="@font/nunito_sans_semi_bold"
+            android:textSize="18sp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/buttonLogout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?android:attr/selectableItemBackground"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvProtegeTitle"
         app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Logout"
-            android:textColor="#0277BD"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:layout_marginEnd="4dp"/>
-        <ImageButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_menu_logout"
-            app:tint="#0277BD"
-            tools:ignore="ContentDescription" />
+            android:textColor="@color/protegeTeal"
+            android:fontFamily="@font/nunito_sans_semi_bold"
+            android:textSize="18sp"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

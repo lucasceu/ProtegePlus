@@ -25,10 +25,36 @@
             android:textColor="@color/protegeRed"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:fontFamily="@font/nunito_sans_bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
+        <!-- Botão de Login (visível por padrão) -->
+        <LinearLayout
+            android:id="@+id/buttonLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="visible">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textColor="@color/protegeTeal" android:textSize="18sp"/>
+
+        </LinearLayout>
+
+        <!-- Botão de Logout (oculto por padrão) -->
         <LinearLayout
             android:id="@+id/buttonLogout"
             android:layout_width="wrap_content"
@@ -40,20 +66,18 @@
             android:background="?android:attr/selectableItemBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent">
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:visibility="gone"
+            tools:visibility="visible">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Logout"
-                android:textColor="@color/protegeTeal" android:textSize="18sp"
-                android:layout_marginEnd="8dp"/>
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textColor="@color/protegeTeal" android:textSize="18sp"/>
 
-            <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@drawable/ic_menu_logout"
-                app:tint="@color/protegeTeal" /> </LinearLayout>
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -99,7 +123,7 @@
                     android:text="Sintomas &amp; Enfermidades"
                     android:textColor="@color/white"
                     android:textSize="20sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/nunito_sans_bold"
                     android:textAlignment="center"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -135,7 +159,7 @@
                     android:text="Serviços de Emergência"
                     android:textColor="@color/white"
                     android:textSize="20sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/nunito_sans_bold"
                     android:textAlignment="center"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -170,7 +194,7 @@
                     android:text="Teste de Conhecimento"
                     android:textColor="@color/white"
                     android:textSize="20sp"
-                    android:textStyle="bold"
+                    android:fontFamily="@font/nunito_sans_bold"
                     android:textAlignment="center"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>

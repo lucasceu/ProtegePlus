@@ -1,7 +1,9 @@
 package com.uescbd2.protegeplus
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,29 +16,42 @@ class GrupoCiapActivity : AppCompatActivity() {
     private lateinit var rvGrupoCiap: RecyclerView
     private lateinit var adapter: GrupoCiapAdapter
 
+    private lateinit var buttonLogin: LinearLayout
+    private lateinit var buttonLogout: LinearLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_grupo_ciap)
 
+        buttonLogin = findViewById(R.id.buttonLogin)
+        buttonLogout = findViewById(R.id.buttonLogout)
+
+        buttonLogin.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        buttonLogout.setOnClickListener {
+            val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+            with(sharedPreferences.edit()) {
+                putBoolean("isLoggedIn", false)
+                apply()
+            }
+            Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
+            updateButtonVisibility()
+        }
+
         dbHelper = DatabaseHelper(this)
         rvGrupoCiap = findViewById(R.id.rvGrupoCiap)
 
-        // 1. Buscar os dados do banco
         val listaDeGrupos = dbHelper.getGruposCiap()
 
-        // 2. Configurar o Adapter e a RecyclerView
         rvGrupoCiap.layoutManager = LinearLayoutManager(this)
         adapter = GrupoCiapAdapter(this, listaDeGrupos) { grupoClicado ->
-
-            // Se o usuário clicar em "Sintomas e queixas" (ID 1)
             if (grupoClicado.id == 1) {
-                // Abre o Verificador de Sintomas (Plano B)
                 val intent = Intent(this, VerificadorSintomasActivity::class.java)
                 startActivity(intent)
-            }
-            // Se o usuário clicar em "Procedimentos" (ID 2) ou "Doenças" (ID 7)
-            else if (grupoClicado.id == 2 || grupoClicado.id == 7) {
-                // Abre o Dicionário (Plano A)
+            } else if (grupoClicado.id == 2 || grupoClicado.id == 7) {
                 val intent = Intent(this, ListaItensActivity::class.java)
                 intent.putExtra("GRUPO_ID", grupoClicado.id)
                 intent.putExtra("GRUPO_NOME", grupoClicado.componente)
@@ -44,11 +59,23 @@ class GrupoCiapActivity : AppCompatActivity() {
             }
         }
         rvGrupoCiap.adapter = adapter
+    }
 
-        // Configura o logout (igual às outras telas)
-        findViewById<LinearLayout>(R.id.llLogout).setOnClickListener {
-            // TODO: Adicionar lógica real de logout (voltar pra MainActivity)
-            Toast.makeText(this, "Logout clicado", Toast.LENGTH_SHORT).show()
+    override fun onResume() {
+        super.onResume()
+        updateButtonVisibility()
+    }
+
+    private fun updateButtonVisibility() {
+        val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+
+        if (isLoggedIn) {
+            buttonLogin.visibility = View.GONE
+            buttonLogout.visibility = View.VISIBLE
+        } else {
+            buttonLogin.visibility = View.VISIBLE
+            buttonLogout.visibility = View.GONE
         }
     }
 }

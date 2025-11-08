@@ -7,11 +7,10 @@
     android:background="@color/white"
     tools:context=".ResultadosEnfermidadesActivity">
 
-    <LinearLayout
-        android:id="@+id/llHeader"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,43 +21,69 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Resultados da Busca"
+            android:fontFamily="@font/nunito_sans_regular"
             android:textSize="14sp" />
+
         <TextView
+            android:id="@+id/tvProtegeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="PROTEGE +"
             android:textColor="#D32F2F"
             android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginTop="8dp" />
+            android:fontFamily="@font/nunito_sans_bold"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvHeader" />
+
         <LinearLayout
-            android:id="@+id/llLogout"
+            android:id="@+id/buttonLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
-            android:layout_gravity="end"
-            android:layout_marginTop="-30dp">
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvProtegeTitle"
+            app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textColor="@color/protegeTeal"
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textSize="18sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/buttonLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvProtegeTitle"
+            app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Logout"
-                android:textColor="#0277BD"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="4dp"/>
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:src="@drawable/ic_menu_logout"
-                app:tint="#0277BD"
-                tools:ignore="ContentDescription" />
+                android:textColor="@color/protegeTeal"
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textSize="18sp"/>
         </LinearLayout>
-    </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvResultadosEnfermidades"
@@ -68,7 +93,7 @@
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintTop_toBottomOf="@id/llHeader"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -81,6 +106,7 @@
         android:text="Nenhuma enfermidade compatível encontrada."
         android:textSize="16sp"
         android:visibility="gone"
+        android:fontFamily="@font/nunito_sans_regular"
         android:layout_margin="16dp"
         app:layout_constraintTop_toTopOf="@id/rvResultadosEnfermidades"
         app:layout_constraintStart_toStartOf="parent"

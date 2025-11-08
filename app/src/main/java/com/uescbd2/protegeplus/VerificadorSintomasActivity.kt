@@ -1,9 +1,11 @@
 package com.uescbd2.protegeplus
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -18,41 +20,50 @@ class VerificadorSintomasActivity : AppCompatActivity() {
     private lateinit var rvSintomasCheckbox: RecyclerView
     private lateinit var adapter: VerificadorSintomasAdapter
     private lateinit var btnBuscarEnfermidades: Button
-
-    // --- NOVAS REFERÊNCIAS ---
     private lateinit var etBuscarSintoma: EditText
     private lateinit var btnLimparSelecao: Button
-
-    // Lista mestra para o adapter
     private val listaCheckboxMestra = mutableListOf<SintomaCheckbox>()
+
+    private lateinit var buttonLogin: LinearLayout
+    private lateinit var buttonLogout: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_verificador_sintomas)
 
+        buttonLogin = findViewById(R.id.buttonLogin)
+        buttonLogout = findViewById(R.id.buttonLogout)
+
+        buttonLogin.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        buttonLogout.setOnClickListener {
+            val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+            with(sharedPreferences.edit()) {
+                putBoolean("isLoggedIn", false)
+                apply()
+            }
+            Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
+            updateButtonVisibility()
+        }
+
         dbHelper = DatabaseHelper(this)
         rvSintomasCheckbox = findViewById(R.id.rvSintomasCheckbox)
         btnBuscarEnfermidades = findViewById(R.id.btnBuscarEnfermidades)
-
-        // --- LIGANDO NOVOS BOTÕES ---
         etBuscarSintoma = findViewById(R.id.etBuscarSintoma)
         btnLimparSelecao = findViewById(R.id.btnLimparSelecao)
 
-        // 1. Buscar os dados do banco
-        val listaDeItensCiap = dbHelper.getSintomasPuros() //
-
-        // 2. Converter para a lista mestra
+        val listaDeItensCiap = dbHelper.getSintomasPuros()
         listaCheckboxMestra.addAll(listaDeItensCiap.map { SintomaCheckbox(it) })
 
-        // 3. Configurar o Adapter e a RecyclerView
         rvSintomasCheckbox.layoutManager = LinearLayoutManager(this)
-        adapter = VerificadorSintomasAdapter(listaCheckboxMestra) // Passa a lista mestra
+        adapter = VerificadorSintomasAdapter(listaCheckboxMestra)
         rvSintomasCheckbox.adapter = adapter
 
-        // 4. Configurar o botão de busca (lógica igual)
         btnBuscarEnfermidades.setOnClickListener {
             val codigosSelecionados = adapter.getSelectedSymptomCodes()
-
             if (codigosSelecionados.isEmpty()) {
                 Toast.makeText(this, "Selecione pelo menos um sintoma.", Toast.LENGTH_SHORT).show()
             } else {
@@ -62,27 +73,35 @@ class VerificadorSintomasActivity : AppCompatActivity() {
             }
         }
 
-        // --- NOVA LÓGICA: Botão Limpar ---
         btnLimparSelecao.setOnClickListener {
             adapter.clearSelections()
             Toast.makeText(this, "Seleção limpa", Toast.LENGTH_SHORT).show()
         }
 
-        // --- NOVA LÓGICA: Filtro de Busca ---
         etBuscarSintoma.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // Chama o filtro do adapter toda vez que o texto muda
                 adapter.filter(s.toString())
             }
-
             override fun afterTextChanged(s: Editable?) {}
         })
+    }
 
-        // Configura o logout
-        findViewById<LinearLayout>(R.id.llLogout).setOnClickListener {
-            Toast.makeText(this, "Logout clicado", Toast.LENGTH_SHORT).show()
+    override fun onResume() {
+        super.onResume()
+        updateButtonVisibility()
+    }
+
+    private fun updateButtonVisibility() {
+        val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+
+        if (isLoggedIn) {
+            buttonLogin.visibility = View.GONE
+            buttonLogout.visibility = View.VISIBLE
+        } else {
+            buttonLogin.visibility = View.VISIBLE
+            buttonLogout.visibility = View.GONE
         }
     }
 }

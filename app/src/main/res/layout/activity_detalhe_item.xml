@@ -7,11 +7,11 @@
     android:background="@color/white"
     tools:context=".DetalheItemActivity">
 
-    <LinearLayout
-        android:id="@+id/llHeader"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/topBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:background="@color/white"
         android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -22,6 +22,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Detalhes"
+            android:fontFamily="@font/nunito_sans_regular"
             android:textSize="14sp" />
 
         <TextView
@@ -31,50 +32,71 @@
             android:text="PROTEGE +"
             android:textColor="#D32F2F"
             android:textSize="28sp"
-            android:textStyle="bold"
-            android:layout_marginTop="8dp" />
+            android:fontFamily="@font/nunito_sans_bold"
+            android:layout_marginTop="8dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvHeader" />
 
         <LinearLayout
-            android:id="@+id/llLogout"
+            android:id="@+id/buttonLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
             android:focusable="true"
-            android:layout_gravity="end"
-            android:layout_marginTop="-30dp">
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"
+            tools:visibility="visible"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvProtegeTitle"
+            app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textColor="@color/protegeTeal"
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textSize="18sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/buttonLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvProtegeTitle"
+            app:layout_constraintBottom_toBottomOf="@id/tvProtegeTitle">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Logout"
-                android:textColor="#0277BD"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="4dp"/>
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/transparent"
-                android:src="@drawable/ic_menu_logout"
-                app:tint="#0277BD"
-                tools:ignore="ContentDescription" />
+                android:textColor="@color/protegeTeal"
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textSize="18sp"/>
         </LinearLayout>
-    </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/tvItemNomeTitulo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:textSize="22sp"
-        android:textStyle="bold"
+        android:fontFamily="@font/nunito_sans_bold"
         android:textColor="@color/black"
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/llHeader"
+        app:layout_constraintTop_toBottomOf="@id/topBar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         tools:text="Febre (A03)" />
@@ -99,7 +121,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sintomas Associados (da tb_sintomas)"
-                android:textStyle="bold"
+                android:fontFamily="@font/nunito_sans_semi_bold"
                 android:textColor="@color/black"
                 android:textSize="16sp" />
 
@@ -119,6 +141,7 @@
                 android:layout_height="wrap_content"
                 android:text="Nenhum sintoma associado encontrado."
                 android:visibility="gone"
+                android:fontFamily="@font/nunito_sans_regular"
                 android:layout_marginTop="8dp"/>
 
             <TextView
@@ -126,7 +149,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sintomas Inclusos"
-                android:textStyle="bold"
+                android:fontFamily="@font/nunito_sans_semi_bold"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:layout_marginTop="24dp" />
@@ -137,6 +160,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textSize="16sp"
+                android:fontFamily="@font/nunito_sans_regular"
                 tools:text="Detalhes dos sintomas inclusos..." />
 
             <TextView
@@ -144,7 +168,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sintomas de Exclusão"
-                android:textStyle="bold"
+                android:fontFamily="@font/nunito_sans_semi_bold"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:layout_marginTop="16dp" />
@@ -155,6 +179,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textSize="16sp"
+                android:fontFamily="@font/nunito_sans_regular"
                 tools:text="Detalhes dos sintomas de exclusão..." />
 
             <TextView
@@ -162,7 +187,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Outros Sintomas"
-                android:textStyle="bold"
+                android:fontFamily="@font/nunito_sans_semi_bold"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:layout_marginTop="16dp" />
@@ -172,6 +197,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:fontFamily="@font/nunito_sans_regular"
                 android:textSize="16sp"
                 tools:text="Detalhes de outros sintomas..." />
 
@@ -180,7 +206,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Possíveis CID-10"
-                android:textStyle="bold"
+                android:fontFamily="@font/nunito_sans_semi_bold"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 android:layout_marginTop="16dp" />
@@ -190,6 +216,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:fontFamily="@font/nunito_sans_regular"
                 android:textSize="16sp"
                 tools:text="R50.8; R50.9" />
 

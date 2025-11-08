@@ -1,60 +1,78 @@
 package com.uescbd2.protegeplus
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
 
 class HomeActivity : AppCompatActivity() {
+
+    private lateinit var buttonLogin: LinearLayout
+    private lateinit var buttonLogout: LinearLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        // Encontra os elementos clicáveis
+        buttonLogin = findViewById(R.id.buttonLogin)
+        buttonLogout = findViewById(R.id.buttonLogout)
+
+        // Ações de clique dos botões
+        buttonLogin.setOnClickListener {
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+        }
+
+        buttonLogout.setOnClickListener {
+            val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+            with(sharedPreferences.edit()) {
+                putBoolean("isLoggedIn", false)
+                apply()
+            }
+            Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
+            updateButtonVisibility()
+        }
+
+        // --- Lógica de Navegação dos Cards ---
         val cardSintomas = findViewById<CardView>(R.id.cardSintomas)
         val cardEmergencia = findViewById<CardView>(R.id.cardEmergencia)
         val cardTeste = findViewById<CardView>(R.id.cardTeste)
-        val buttonLogout = findViewById<LinearLayout>(R.id.buttonLogout) // LinearLayout clicável
 
-        // ... (clique do cardSintomas fica igual) ...
         cardSintomas.setOnClickListener {
-            // Linha antiga (que abria SintomasCategoriaActivity):
-            // val intent = Intent(this, SintomasCategoriaActivity::class.java)
-
-            // Nova linha:
             val intent = Intent(this, GrupoCiapActivity::class.java)
             startActivity(intent)
         }
 
-
-        // --- INÍCIO DA ALTERAÇÃO ---
-
         cardEmergencia.setOnClickListener {
-            // A linha do Toast abaixo foi substituída:
-            // Toast.makeText(this, "Abrir Serviços de Emergência", Toast.LENGTH_SHORT).show()
-
-            // Esta é a nova linha que abre a tela de emergência:
             val intent = Intent(this, ServicosEmergenciaActivity::class.java)
             startActivity(intent)
         }
 
-        // --- FIM DA ALTERAÇÃO ---
-
-
-        // ... (clique do cardTeste fica igual) ...
         cardTeste.setOnClickListener {
-            Toast.makeText(this, "Abrir Teste de Conhecimento", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Teste de Conhecimento ainda não implementado.", Toast.LENGTH_SHORT).show()
         }
+    }
 
-        // ... (clique do buttonLogout fica igual) ...
-        buttonLogout.setOnClickListener {
-            Toast.makeText(this, "Logout realizado", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, MainActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
-            finish()
+    override fun onResume() {
+        super.onResume()
+        // Atualiza a visibilidade dos botões toda vez que a tela é exibida
+        updateButtonVisibility()
+    }
+
+    private fun updateButtonVisibility() {
+        val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+
+        if (isLoggedIn) {
+            buttonLogin.visibility = View.GONE
+            buttonLogout.visibility = View.VISIBLE
+        } else {
+            buttonLogin.visibility = View.VISIBLE
+            buttonLogout.visibility = View.GONE
         }
     }
 }

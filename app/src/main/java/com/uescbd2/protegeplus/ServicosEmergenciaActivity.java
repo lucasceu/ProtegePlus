@@ -1,10 +1,12 @@
-package com.uescbd2.protegeplus; //
+package com.uescbd2.protegeplus;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -12,46 +14,47 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-// Imports necessários para as novas classes
 import java.util.List;
 
 public class ServicosEmergenciaActivity extends AppCompatActivity {
 
-    // Referências para o Helper e a RecyclerView
     private DatabaseHelper dbHelper;
     private RecyclerView rvEmergencia;
     private TelefoneAdapter adapter;
     private TextView tvEmptyState;
+
+    private LinearLayout buttonLogin;
+    private LinearLayout buttonLogout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_servicos_emergencia);
 
-        // Instancia o DatabaseHelper (Kotlin) a partir do Java
-        dbHelper = new DatabaseHelper(this);
+        buttonLogin = findViewById(R.id.buttonLogin);
+        buttonLogout = findViewById(R.id.buttonLogout);
 
-        // Referências da View
-        rvEmergencia = findViewById(R.id.rvEmergencia);
-        tvEmptyState = findViewById(R.id.tvEmptyState);
-        LinearLayout logoutButton = findViewById(R.id.llLogout);
-
-        // Configura o "botão" de logout (lógica igual à anterior)
-        logoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(ServicosEmergenciaActivity.this, "Logout clicado", Toast.LENGTH_SHORT).show();
-                // TODO: Adicionar Intent para a tela de Login
-            }
+        buttonLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(ServicosEmergenciaActivity.this, MainActivity.class);
+            startActivity(intent);
         });
 
-        // --- LÓGICA DA LISTA DINÂMICA ---
+        buttonLogout.setOnClickListener(v -> {
+            SharedPreferences sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putBoolean("isLoggedIn", false);
+            editor.apply();
 
-        // 1. Buscar os dados do banco
-        //    (O dbHelper.getTelefonesUteis() é uma função Kotlin, mas o Java a chama normalmente)
+            Toast.makeText(ServicosEmergenciaActivity.this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show();
+            updateButtonVisibility();
+        });
+
+        dbHelper = new DatabaseHelper(this);
+        rvEmergencia = findViewById(R.id.rvEmergencia);
+        tvEmptyState = findViewById(R.id.tvEmptyState);
+
         List<TelefoneUtil> listaDeTelefones = dbHelper.getTelefonesUteis();
 
-        // 2. Verificar se a lista está vazia
         if (listaDeTelefones.isEmpty()) {
             tvEmptyState.setVisibility(View.VISIBLE);
             rvEmergencia.setVisibility(View.GONE);
@@ -59,10 +62,7 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
             tvEmptyState.setVisibility(View.GONE);
             rvEmergencia.setVisibility(View.VISIBLE);
 
-            // 3. Configurar o Adapter (Kotlin) a partir do Java
-            //    Usamos uma expressão lambda para o clique
             adapter = new TelefoneAdapter(this, listaDeTelefones, telefone -> {
-                // 4. Ação de clique: Abrir o discador
                 if (telefone.getNumero() != null && !telefone.getNumero().isEmpty()) {
                     Intent intent = new Intent(Intent.ACTION_DIAL);
                     intent.setData(Uri.parse("tel:" + telefone.getNumero()));
@@ -70,12 +70,30 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
                 } else {
                     Toast.makeText(this, "Número não disponível", Toast.LENGTH_SHORT).show();
                 }
-                return null; // Necessário para o lambda do Kotlin (que espera Unit)
+                return null;
             });
 
-            // 5. Ligar o Adapter e o LayoutManager na RecyclerView
             rvEmergencia.setLayoutManager(new LinearLayoutManager(this));
             rvEmergencia.setAdapter(adapter);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateButtonVisibility();
+    }
+
+    private void updateButtonVisibility() {
+        SharedPreferences sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE);
+        boolean isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false);
+
+        if (isLoggedIn) {
+            buttonLogin.setVisibility(View.GONE);
+            buttonLogout.setVisibility(View.VISIBLE);
+        } else {
+            buttonLogin.setVisibility(View.VISIBLE);
+            buttonLogout.setVisibility(View.GONE);
         }
     }
 }
