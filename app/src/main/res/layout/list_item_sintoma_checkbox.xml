@@ -1,37 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="12dp"
-    android:background="?android:attr/selectableItemBackground">
-
-    <CheckBox
-        android:id="@+id/cbSintoma"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:clickable="false"
-        android:focusable="false" />
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp"
+    android:layout_marginBottom="8dp" android:background="@drawable/list_item_border"> <CheckBox
+    android:id="@+id/cbSintoma"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:buttonTint="@color/protegeTeal" app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintBottom_toBottomOf="parent"
+    tools:checked="false" />
 
     <TextView
         android:id="@+id/tvSintomaNome"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="@android:color/black"
-        android:textSize="18sp"
-        tools:text="Febre" />
+        android:layout_marginStart="8dp"
+        android:fontFamily="@font/nunito_sans_regular"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@+id/cbSintoma"
+        app:layout_constraintEnd_toStartOf="@+id/tvSintomaCodigo"
+        app:layout_constraintStart_toEndOf="@+id/cbSintoma"
+        app:layout_constraintTop_toTopOf="@+id/cbSintoma"
+        tools:text="Traumatismo do músculo e do tendão do quadríceps" />
 
     <TextView
         android:id="@+id/tvSintomaCodigo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/nunito_sans_regular"
         android:textColor="@android:color/darker_gray"
         android:textSize="14sp"
-        android:layout_marginStart="8dp"
-        tools:text="(A03)" />
+        app:layout_constraintBottom_toBottomOf="@+id/tvSintomaNome"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvSintomaNome"
+        tools:text="(L81)" />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
