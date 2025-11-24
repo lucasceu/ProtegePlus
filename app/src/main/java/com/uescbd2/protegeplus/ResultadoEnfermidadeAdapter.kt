@@ -1,5 +1,6 @@
 package com.uescbd2.protegeplus
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 class ResultadoEnfermidadeAdapter(
     private val resultados: List<EnfermidadeResultado>,
     private val totalSintomasSelecionados: Int,
-    private val onItemClick: (ItemCiap) -> Unit
+    private val onItemClick: (EnfermidadeResultado) -> Unit
 ) : RecyclerView.Adapter<ResultadoEnfermidadeAdapter.ResultadoViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ResultadoViewHolder {
@@ -29,17 +30,23 @@ class ResultadoEnfermidadeAdapter(
         private val tvPontuacao: TextView = itemView.findViewById(R.id.tvEnfermidadePontuacao)
 
         init {
-            itemView.setOnClickListener {
-                // Ao clicar, passa o ItemCiap (a enfermidade) para abrir os detalhes
-                onItemClick(resultados[adapterPosition].enfermidade)
-            }
+            itemView.setOnClickListener { onItemClick(resultados[adapterPosition]) }
         }
 
-        fun bind(resultado: EnfermidadeResultado) {
-            tvNome.text = resultado.enfermidade.nome ?: "Enfermidade desconhecida"
+        fun bind(res: EnfermidadeResultado) {
+            tvNome.text = res.enfermidade.nome ?: "Desconhecido"
 
-            // Texto do ranking (ex: "Compatível com 2 de 3 sintomas")
-            tvPontuacao.text = "Compatível com ${resultado.pontuacao} de $totalSintomasSelecionados sintomas"
+            // Lógica visual de ranking
+            val score = res.pontuacao
+            tvPontuacao.text = "Compatibilidade: $score de $totalSintomasSelecionados sintomas"
+
+            // Destaque visual se a pontuação for alta (opcional)
+            if (score == totalSintomasSelecionados && score > 0) {
+                tvPontuacao.setTextColor(Color.parseColor("#D32F2F")) // Vermelho (Match perfeito)
+                tvPontuacao.text = "Alta Compatibilidade ($score/$totalSintomasSelecionados)"
+            } else {
+                tvPontuacao.setTextColor(Color.WHITE)
+            }
         }
     }
 }

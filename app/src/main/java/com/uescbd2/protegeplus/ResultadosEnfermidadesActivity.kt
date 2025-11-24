@@ -17,7 +17,6 @@ class ResultadosEnfermidadesActivity : AppCompatActivity() {
     private lateinit var rvResultados: RecyclerView
     private lateinit var adapter: ResultadoEnfermidadeAdapter
     private lateinit var tvEmptyResultados: TextView
-
     private lateinit var buttonLogin: LinearLayout
     private lateinit var buttonLogout: LinearLayout
 
@@ -25,68 +24,88 @@ class ResultadosEnfermidadesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_resultados_enfermidades)
 
+        // Setup Toolbar
         buttonLogin = findViewById(R.id.buttonLogin)
         buttonLogout = findViewById(R.id.buttonLogout)
-
-        buttonLogin.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-        }
-
+        buttonLogin.setOnClickListener { startActivity(Intent(this, MainActivity::class.java)) }
         buttonLogout.setOnClickListener {
-            val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
-            with(sharedPreferences.edit()) {
-                putBoolean("isLoggedIn", false)
-                apply()
-            }
-            Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
+            getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE).edit().putBoolean("isLoggedIn", false).apply()
             updateButtonVisibility()
         }
 
-        val codigosSintomas = intent.getStringArrayListExtra("CODIGOS_SINTOMAS")
-        if (codigosSintomas == null || codigosSintomas.isEmpty()) {
-            Toast.makeText(this, "Erro: Nenhum sintoma selecionado.", Toast.LENGTH_SHORT).show()
-            finish()
+        rvResultados = findViewById(R.id.rvResultadosEnfermidades)
+        tvEmptyResultados = findViewById(R.id.tvEmptyResultados)
+        dbHelper = DatabaseHelper(this)
+
+        // 1. Recebe os sintomas selecionados
+        val codigosSintomas = intent.getStringArrayListExtra("CODIGOS_SINTOMAS") ?: arrayListOf()
+
+        if (codigosSintomas.isEmpty()) {
+            tvEmptyResultados.visibility = View.VISIBLE
+            tvEmptyResultados.text = "Nenhum sintoma recebido para análise."
             return
         }
 
-        dbHelper = DatabaseHelper(this)
-        rvResultados = findViewById(R.id.rvResultadosEnfermidades)
-        tvEmptyResultados = findViewById(R.id.tvEmptyResultados)
-        rvResultados.layoutManager = LinearLayoutManager(this)
+        // 2. Busca Ampla (Rede de Pesca no SQL)
+        val candidatos = dbHelper.getEnfermidadesPorSintomas(codigosSintomas)
 
-        val listaSuspeitos = dbHelper.getEnfermidadesPorSintomas(codigosSintomas)
-        val listaRanking = mutableListOf<EnfermidadeResultado>()
+        // 3. Algoritmo de Ranking (Kotlin)
+        val listaRankeada = calcularRanking(candidatos, codigosSintomas)
 
-        for (item in listaSuspeitos) {
-            val resultado = EnfermidadeResultado(item, 0)
-            for (codigo in codigosSintomas) {
-                val codigoFormatado = " ${codigo}"
-                val achouEmInclusos = item.textoSintomasInclusos?.contains(codigoFormatado) ?: false
-                val achouEmOutros = item.textoOutrosSintomas?.contains(codigoFormatado) ?: false
-                if (achouEmInclusos || achouEmOutros) {
-                    resultado.pontuacao++
-                }
-            }
-            listaRanking.add(resultado)
-        }
-
-        listaRanking.sortByDescending { it.pontuacao }
-
-        if (listaRanking.isEmpty()) {
+        // 4. Exibe
+        if (listaRankeada.isEmpty()) {
             tvEmptyResultados.visibility = View.VISIBLE
             rvResultados.visibility = View.GONE
         } else {
             tvEmptyResultados.visibility = View.GONE
             rvResultados.visibility = View.VISIBLE
-            adapter = ResultadoEnfermidadeAdapter(listaRanking, codigosSintomas.size) { enfermidadeClicada ->
+
+            rvResultados.layoutManager = LinearLayoutManager(this)
+            // Passamos o total de sintomas selecionados para mostrar "2 de 5" na tela
+            adapter = ResultadoEnfermidadeAdapter(listaRankeada, codigosSintomas.size) { resultado ->
+                // Ao clicar, abre detalhes
                 val intent = Intent(this, DetalheItemActivity::class.java)
-                intent.putExtra("ITEM_CODIGO", enfermidadeClicada.codigo)
-                intent.putExtra("ITEM_NOME", enfermidadeClicada.nome)
+                intent.putExtra("ITEM_CODIGO", resultado.enfermidade.codigo)
+                intent.putExtra("ITEM_NOME", resultado.enfermidade.nome)
                 startActivity(intent)
             }
             rvResultados.adapter = adapter
         }
+    }
+
+    private fun calcularRanking(
+        candidatos: List<ItemCiap>,
+        codigosSelecionados: List<String>
+    ): List<EnfermidadeResultado> {
+        val resultados = mutableListOf<EnfermidadeResultado>()
+
+        for (doenca in candidatos) {
+            var pontos = 0
+            val matches = mutableListOf<String>()
+
+            // Prepara texto para busca (lowercase para ignorar maiúsculas/minúsculas)
+            val textoBusca = "${doenca.textoSintomasInclusos} ${doenca.textoOutrosSintomas}".lowercase()
+            val codigoDoenca = doenca.codigo.lowercase()
+
+            for (sintomaCod in codigosSelecionados) {
+                val sCod = sintomaCod.lowercase()
+
+                // Critérios de Pontuação:
+                // 1. O código do sintoma é IGUAL ao código da doença? (Peso forte)
+                // 2. O código do sintoma aparece no texto descritivo?
+                if (codigoDoenca == sCod || textoBusca.contains(sCod)) {
+                    pontos++
+                    matches.add(sintomaCod)
+                }
+            }
+
+            if (pontos > 0) {
+                resultados.add(EnfermidadeResultado(doenca, pontos, matches))
+            }
+        }
+
+        // Ordena: Quem tem mais pontos aparece primeiro
+        return resultados.sortedByDescending { it.pontuacao }
     }
 
     override fun onResume() {
@@ -95,10 +114,8 @@ class ResultadosEnfermidadesActivity : AppCompatActivity() {
     }
 
     private fun updateButtonVisibility() {
-        val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
-        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-
-        if (isLoggedIn) {
+        val prefs = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+        if (prefs.getBoolean("isLoggedIn", false)) {
             buttonLogin.visibility = View.GONE
             buttonLogout.visibility = View.VISIBLE
         } else {

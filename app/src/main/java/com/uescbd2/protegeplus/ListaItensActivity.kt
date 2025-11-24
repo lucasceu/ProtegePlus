@@ -29,22 +29,20 @@ class ListaItensActivity : AppCompatActivity() {
         buttonLogout = findViewById(R.id.buttonLogout)
 
         buttonLogin.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, MainActivity::class.java))
         }
 
         buttonLogout.setOnClickListener {
-            val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
-            with(sharedPreferences.edit()) {
-                putBoolean("isLoggedIn", false)
-                apply()
-            }
-            Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
+            val prefs = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putBoolean("isLoggedIn", false).apply()
+            Toast.makeText(this, "Logout realizado", Toast.LENGTH_SHORT).show()
             updateButtonVisibility()
         }
 
         val grupoId = intent.getIntExtra("GRUPO_ID", -1)
         val grupoNome = intent.getStringExtra("GRUPO_NOME") ?: "Itens"
+        // --- NOVO: Recebe a letra filtro (pode ser null se vier de outro lugar) ---
+        val letraFiltro = intent.getStringExtra("LETRA_FILTRO")
 
         dbHelper = DatabaseHelper(this)
         rvListaItens = findViewById(R.id.rvListaItens)
@@ -53,11 +51,11 @@ class ListaItensActivity : AppCompatActivity() {
         tvHeader.text = grupoNome
 
         val listaDeItens: List<ItemCiap> = if (grupoId == 1 || grupoId == 7) {
-            dbHelper.getItensFromTbCiap(grupoId)
+            // --- NOVO: Passa a letra filtro para a query ---
+            dbHelper.getItensFromTbCiap(grupoId, letraFiltro)
         } else if (grupoId == 2) {
             dbHelper.getItensFromProcedimentoClinico(grupoId)
         } else {
-            Toast.makeText(this, "Grupo não reconhecido: $grupoId", Toast.LENGTH_SHORT).show()
             emptyList()
         }
 
@@ -81,9 +79,8 @@ class ListaItensActivity : AppCompatActivity() {
     }
 
     private fun updateButtonVisibility() {
-        val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
-        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-
+        val prefs = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+        val isLoggedIn = prefs.getBoolean("isLoggedIn", false)
         if (isLoggedIn) {
             buttonLogin.visibility = View.GONE
             buttonLogout.visibility = View.VISIBLE

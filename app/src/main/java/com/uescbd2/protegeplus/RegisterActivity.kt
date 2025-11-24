@@ -29,6 +29,7 @@ class RegisterActivity : AppCompatActivity() {
         val cargoEditText = findViewById<EditText>(R.id.editTextCargo)
         val senhaEditText = findViewById<EditText>(R.id.editTextPasswordRegister)
         val confirmaSenhaEditText = findViewById<EditText>(R.id.editTextConfirmPasswordRegister)
+        val telefoneEditText = findViewById<EditText>(R.id.editTextTelefone)
 
         registerButton.setOnClickListener {
             val cpfOuMatricula = matriculaEditText.text.toString().trim()
@@ -38,6 +39,7 @@ class RegisterActivity : AppCompatActivity() {
             val cargo = cargoEditText.text.toString().trim()
             val senha = senhaEditText.text.toString()
             val confirmaSenha = confirmaSenhaEditText.text.toString()
+            val telefone = telefoneEditText.text.toString().trim()
 
             // --- Validações ---
             if (nome.isEmpty() || email.isEmpty() || senha.isEmpty()) {
@@ -57,31 +59,30 @@ class RegisterActivity : AppCompatActivity() {
             // --- FIM DA NOVA VALIDAÇÃO ---
 
 
-            // --- MUDANÇA NA CRIAÇÃO DO USUÁRIO ---
-            // Removemos o testId
-            // O IdPessoa = 0 (padrão) indica que é um novo usuário
-            // O DatabaseHelper vai ignorar o ID 0 e deixar o AUTOINCREMENT funcionar.
+            // Cria objeto usuário (SEM O TELEFONE AQUI)
             val novoUsuario = Usuario(
-                // IdPessoa = 0 (padrão)
                 nome = nome,
                 cpf = cpfOuMatricula.ifEmpty { null },
                 cargo = cargo.ifEmpty { null },
-                telefone = null, // Você não tinha campo de telefone no form
-                empresa = null, // Você não tinha campo de empresa no form
+                telefone = null, // Ignora aqui, pois não vai pra tabela pessoa
+                empresa = null,
                 email = email,
                 senhaPlana = senha
             )
-            // --- FIM DA MUDANÇA ---
 
-            // Tenta adicionar ao banco
-            val sucesso = dbHelper.adicionarUsuario(novoUsuario)
+            // 1. Tenta salvar o usuário e PEGA O ID
+            val novoId = dbHelper.adicionarUsuario(novoUsuario)
 
-            // Feedback
-            if (sucesso) {
+            if (novoId != -1L) {
+                // 2. Se deu certo, salva o telefone na outra tabela vinculando o ID
+                if (telefone.isNotEmpty()) {
+                    dbHelper.adicionarTelefonePessoal(novoId, telefone)
+                }
+
                 Toast.makeText(this, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
                 finish()
             } else {
-                Toast.makeText(this, "Erro ao cadastrar. Verifique os dados ou tente outro e-mail.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Erro ao cadastrar. E-mail já existe?", Toast.LENGTH_LONG).show()
             }
         }
     }

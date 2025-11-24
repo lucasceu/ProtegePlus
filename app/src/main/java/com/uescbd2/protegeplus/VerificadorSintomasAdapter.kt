@@ -4,66 +4,84 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import java.util.Locale
 
 class VerificadorSintomasAdapter(
-    // A lista mestra, com TODOS os sintomas
-    private val allSintomas: List<SintomaCheckbox>
-) : RecyclerView.Adapter<VerificadorSintomasAdapter.SintomaViewHolder>() {
+    private var itensExibidos: List<SintomaListItem>,
+    // Callback: Quando clicar numa letra, avisa a Activity
+    private val onHeaderClick: (SintomaListItem.Separator) -> Unit
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    // A lista que o usuário realmente vê (que será filtrada)
-    private var displayedSintomas: MutableList<SintomaCheckbox> = allSintomas.toMutableList()
+    private val TYPE_HEADER = 0
+    private val TYPE_ITEM = 1
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SintomaViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.list_item_sintoma_checkbox, parent, false)
-        return SintomaViewHolder(view)
-    }
-
-    override fun getItemCount(): Int = displayedSintomas.size
-
-    override fun onBindViewHolder(holder: SintomaViewHolder, position: Int) {
-        holder.bind(displayedSintomas[position])
-    }
-
-    // --- NOVA FUNÇÃO: Limpar seleção ---
-    fun clearSelections() {
-        // Limpa a seleção na lista mestra
-        allSintomas.forEach { it.isChecked = false }
-        // Avisa o adapter para redesenhar a tela
-        notifyDataSetChanged()
-    }
-
-    // --- NOVA FUNÇÃO: Filtrar a lista ---
-    fun filter(query: String) {
-        displayedSintomas.clear()
-
-        if (query.isEmpty()) {
-            displayedSintomas.addAll(allSintomas)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == TYPE_HEADER) {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_header_sintoma, parent, false)
+            HeaderViewHolder(view)
         } else {
-            val lowerCaseQuery = query.toLowerCase(Locale.getDefault())
-            for (item in allSintomas) {
-                // Filtra pelo nome do sintoma
-                if (item.item.nome?.toLowerCase(Locale.getDefault())?.contains(lowerCaseQuery) == true) {
-                    displayedSintomas.add(item)
-                }
-            }
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.list_item_sintoma_checkbox, parent, false)
+            SintomaViewHolder(view)
         }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val item = itensExibidos[position]
+        if (holder is HeaderViewHolder && item is SintomaListItem.Separator) {
+            holder.bind(item)
+        } else if (holder is SintomaViewHolder && item is SintomaListItem.Item) {
+            holder.bind(item.data)
+        }
+    }
+
+    override fun getItemCount(): Int = itensExibidos.size
+
+    override fun getItemViewType(position: Int): Int {
+        return when (itensExibidos[position]) {
+            is SintomaListItem.Separator -> TYPE_HEADER
+            is SintomaListItem.Item -> TYPE_ITEM
+        }
+    }
+
+    fun updateList(novaLista: List<SintomaListItem>) {
+        itensExibidos = novaLista
         notifyDataSetChanged()
     }
 
-    // --- FUNÇÃO ATUALIZADA: Pega os códigos da lista mestra ---
-    fun getSelectedSymptomCodes(): ArrayList<String> {
-        val selectedCodes = ArrayList<String>()
-        // Lê da lista mestra (allSintomas)
-        for (item in allSintomas) {
-            if (item.isChecked) {
-                selectedCodes.add(item.item.codigo)
+    fun getSelectedCodes(): ArrayList<String> {
+        val selected = ArrayList<String>()
+        for (obj in itensExibidos) {
+            if (obj is SintomaListItem.Item && obj.data.isChecked) {
+                selected.add(obj.data.item.codigo)
             }
         }
-        return selectedCodes
+        return selected
+    }
+
+    // --- ViewHolders ---
+
+    inner class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvHeader: TextView = itemView.findViewById(R.id.tvHeaderLetra)
+        private val ivChevron: ImageView = itemView.findViewById(R.id.ivChevron)
+
+        fun bind(separator: SintomaListItem.Separator) {
+            tvHeader.text = "${separator.letter}  (${separator.count})"
+
+            // Gira a seta dependendo se está expandido ou não
+            if (separator.isExpanded) {
+                ivChevron.rotation = 180f // Seta pra cima
+            } else {
+                ivChevron.rotation = 0f   // Seta pra baixo
+            }
+
+            itemView.setOnClickListener {
+                onHeaderClick(separator)
+            }
+        }
     }
 
     inner class SintomaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -71,19 +89,19 @@ class VerificadorSintomasAdapter(
         private val tvCodigo: TextView = itemView.findViewById(R.id.tvSintomaCodigo)
         private val cbSintoma: CheckBox = itemView.findViewById(R.id.cbSintoma)
 
-        init {
-            itemView.setOnClickListener {
-                // Pega o item da lista VISÍVEL
-                val item = displayedSintomas[adapterPosition]
-                item.isChecked = !item.isChecked
-                cbSintoma.isChecked = item.isChecked
-            }
-        }
+        fun bind(sintomaCheck: SintomaCheckbox) {
+            tvNome.text = sintomaCheck.item.nome
+            tvCodigo.text = "(${sintomaCheck.item.codigo})"
 
-        fun bind(sintoma: SintomaCheckbox) {
-            tvNome.text = sintoma.item.nome ?: "Sintoma desconhecido"
-            tvCodigo.text = "(${sintoma.item.codigo})"
-            cbSintoma.isChecked = sintoma.isChecked
+            cbSintoma.setOnCheckedChangeListener(null)
+            cbSintoma.isChecked = sintomaCheck.isChecked
+
+            val clickListener = View.OnClickListener {
+                sintomaCheck.isChecked = !sintomaCheck.isChecked
+                cbSintoma.isChecked = sintomaCheck.isChecked
+            }
+            itemView.setOnClickListener(clickListener)
+            cbSintoma.setOnClickListener { sintomaCheck.isChecked = cbSintoma.isChecked }
         }
     }
 }

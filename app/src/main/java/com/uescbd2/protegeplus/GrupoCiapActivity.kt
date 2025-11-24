@@ -27,17 +27,13 @@ class GrupoCiapActivity : AppCompatActivity() {
         buttonLogout = findViewById(R.id.buttonLogout)
 
         buttonLogin.setOnClickListener {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, MainActivity::class.java))
         }
 
         buttonLogout.setOnClickListener {
-            val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
-            with(sharedPreferences.edit()) {
-                putBoolean("isLoggedIn", false)
-                apply()
-            }
-            Toast.makeText(this, "Logout realizado com sucesso", Toast.LENGTH_SHORT).show()
+            val prefs = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putBoolean("isLoggedIn", false).apply()
+            Toast.makeText(this, "Logout realizado", Toast.LENGTH_SHORT).show()
             updateButtonVisibility()
         }
 
@@ -49,9 +45,15 @@ class GrupoCiapActivity : AppCompatActivity() {
         rvGrupoCiap.layoutManager = LinearLayoutManager(this)
         adapter = GrupoCiapAdapter(this, listaDeGrupos) { grupoClicado ->
             if (grupoClicado.id == 1) {
+                // Grupo 1: Sintomas -> Verificador
                 val intent = Intent(this, VerificadorSintomasActivity::class.java)
                 startActivity(intent)
-            } else if (grupoClicado.id == 2 || grupoClicado.id == 7) {
+            } else if (grupoClicado.id == 7) {
+                // --- MUDANÇA: Grupo 7: Diagnósticos -> Tela de Órgãos ---
+                val intent = Intent(this, OrgaoActivity::class.java)
+                startActivity(intent)
+            } else if (grupoClicado.id == 2) {
+                // Grupo 2: Procedimentos -> Lista Direta
                 val intent = Intent(this, ListaItensActivity::class.java)
                 intent.putExtra("GRUPO_ID", grupoClicado.id)
                 intent.putExtra("GRUPO_NOME", grupoClicado.componente)
@@ -67,9 +69,8 @@ class GrupoCiapActivity : AppCompatActivity() {
     }
 
     private fun updateButtonVisibility() {
-        val sharedPreferences = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
-        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-
+        val prefs = getSharedPreferences("protegeplus_prefs", Context.MODE_PRIVATE)
+        val isLoggedIn = prefs.getBoolean("isLoggedIn", false)
         if (isLoggedIn) {
             buttonLogin.visibility = View.GONE
             buttonLogout.visibility = View.VISIBLE
