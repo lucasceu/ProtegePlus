@@ -8,25 +8,31 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class DetalheItemActivity : AppCompatActivity() {
 
     private lateinit var dbHelper: DatabaseHelper
-    private lateinit var rvSubSintomas: RecyclerView
-    private lateinit var tvItemNomeTitulo: TextView
-    private lateinit var tvSubSintomasLabel: TextView
-    private lateinit var tvEmptySubSintomas: TextView
-    private lateinit var tvSintomasInclusosLabel: TextView
-    private lateinit var tvSintomasInclusos: TextView
-    private lateinit var tvSintomasExclusaoLabel: TextView
-    private lateinit var tvSintomasExclusao: TextView
-    private lateinit var tvOutrosSintomasLabel: TextView
-    private lateinit var tvOutrosSintomas: TextView
-    private lateinit var tvCid10Label: TextView
-    private lateinit var tvCid10: TextView
 
+    // Views de Texto
+    private lateinit var tvItemNomeTitulo: TextView
+    private lateinit var tvSintomasInclusos: TextView
+    private lateinit var tvSintomasExclusao: TextView
+    private lateinit var tvOutrosSintomas: TextView
+    private lateinit var tvEmptySubSintomas: TextView
+
+    // Cards (Para esconder o bloco inteiro se estiver vazio)
+    private lateinit var cardInclusos: CardView
+    private lateinit var cardExclusao: CardView
+    private lateinit var cardOutros: CardView
+    private lateinit var cardSubSintomas: CardView
+
+    // Lista
+    private lateinit var rvSubSintomas: RecyclerView
+
+    // Botões de Login/Logout (Padrão das outras telas)
     private lateinit var buttonLogin: LinearLayout
     private lateinit var buttonLogout: LinearLayout
 
@@ -34,6 +40,7 @@ class DetalheItemActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detalhe_item)
 
+        // --- Configuração da Toolbar ---
         buttonLogin = findViewById(R.id.buttonLogin)
         buttonLogout = findViewById(R.id.buttonLogout)
 
@@ -52,7 +59,9 @@ class DetalheItemActivity : AppCompatActivity() {
             updateButtonVisibility()
         }
 
+        // --- Recebendo Dados ---
         val itemCodigo = intent.getStringExtra("ITEM_CODIGO")
+        // O nome já vem do Intent, mas se quiser garantir, pode buscar do banco também.
         val itemNome = intent.getStringExtra("ITEM_NOME") ?: "Detalhes"
 
         if (itemCodigo == null) {
@@ -64,8 +73,10 @@ class DetalheItemActivity : AppCompatActivity() {
         dbHelper = DatabaseHelper(this)
         inicializarViews()
 
-        tvItemNomeTitulo.text = "$itemNome ($itemCodigo)"
+        // Título Limpo (Sem código entre parênteses, conforme pedido)
+        tvItemNomeTitulo.text = itemNome
 
+        // --- Buscando Dados ---
         val detalhes = dbHelper.getDetalhesItemCiap(itemCodigo)
         preencherDetalhes(detalhes)
 
@@ -93,60 +104,62 @@ class DetalheItemActivity : AppCompatActivity() {
 
     private fun inicializarViews() {
         tvItemNomeTitulo = findViewById(R.id.tvItemNomeTitulo)
-        rvSubSintomas = findViewById(R.id.rvSubSintomas)
-        tvSubSintomasLabel = findViewById(R.id.tvSubSintomasLabel)
-        tvEmptySubSintomas = findViewById(R.id.tvEmptySubSintomas)
-        tvSintomasInclusosLabel = findViewById(R.id.tvSintomasInclusosLabel)
+
+        // Cards
+        cardInclusos = findViewById(R.id.cardInclusos)
+        cardExclusao = findViewById(R.id.cardExclusao)
+        cardOutros = findViewById(R.id.cardOutros)
+        cardSubSintomas = findViewById(R.id.cardSubSintomas)
+
+        // Conteúdo dos Cards
         tvSintomasInclusos = findViewById(R.id.tvSintomasInclusos)
-        tvSintomasExclusaoLabel = findViewById(R.id.tvSintomasExclusaoLabel)
         tvSintomasExclusao = findViewById(R.id.tvSintomasExclusao)
-        tvOutrosSintomasLabel = findViewById(R.id.tvOutrosSintomasLabel)
         tvOutrosSintomas = findViewById(R.id.tvOutrosSintomas)
-        tvCid10Label = findViewById(R.id.tvCid10Label)
-        tvCid10 = findViewById(R.id.tvCid10)
+
+        // Lista
+        rvSubSintomas = findViewById(R.id.rvSubSintomas)
+        tvEmptySubSintomas = findViewById(R.id.tvEmptySubSintomas)
     }
 
     private fun preencherDetalhes(detalhe: DetalheCiap?) {
         if (detalhe == null) {
-            tvSintomasInclusosLabel.visibility = View.GONE
-            tvSintomasInclusos.visibility = View.GONE
-            tvSintomasExclusaoLabel.visibility = View.GONE
-            tvSintomasExclusao.visibility = View.GONE
-            tvOutrosSintomasLabel.visibility = View.GONE
-            tvOutrosSintomas.visibility = View.GONE
-            tvCid10Label.visibility = View.GONE
-            tvCid10.visibility = View.GONE
+            // Se não achou nada, esconde tudo para não ficar tela em branco
+            cardInclusos.visibility = View.GONE
+            cardExclusao.visibility = View.GONE
+            cardOutros.visibility = View.GONE
             return
         }
-        exibirOuEsconderCampo(tvSintomasInclusosLabel, tvSintomasInclusos, detalhe.sintomasInclusos)
-        exibirOuEsconderCampo(tvSintomasExclusaoLabel, tvSintomasExclusao, detalhe.sintomasExclusao)
-        exibirOuEsconderCampo(tvOutrosSintomasLabel, tvOutrosSintomas, detalhe.outrosSintomas)
-        exibirOuEsconderCampo(tvCid10Label, tvCid10, detalhe.possiveisCid10)
+
+        // Lógica inteligente: Só mostra o Card se o texto não for vazio
+        exibirOuEsconderCard(cardInclusos, tvSintomasInclusos, detalhe.sintomasInclusos)
+        exibirOuEsconderCard(cardExclusao, tvSintomasExclusao, detalhe.sintomasExclusao)
+        exibirOuEsconderCard(cardOutros, tvOutrosSintomas, detalhe.outrosSintomas)
+
+        // Nota: Removemos CID-10 propositalmente conforme solicitado
     }
 
     private fun preencherSubSintomas(lista: List<SubSintoma>) {
         if (lista.isEmpty()) {
-            tvSubSintomasLabel.visibility = View.GONE
-            rvSubSintomas.visibility = View.GONE
-            tvEmptySubSintomas.visibility = View.VISIBLE
+            // Se não tem sub-sintomas, esconde o card inteiro
+            cardSubSintomas.visibility = View.GONE
         } else {
-            tvSubSintomasLabel.visibility = View.VISIBLE
-            rvSubSintomas.visibility = View.VISIBLE
+            cardSubSintomas.visibility = View.VISIBLE
             tvEmptySubSintomas.visibility = View.GONE
+
+            rvSubSintomas.visibility = View.VISIBLE
             rvSubSintomas.layoutManager = LinearLayoutManager(this)
             rvSubSintomas.adapter = SubSintomaAdapter(lista)
+            // Desabilita scroll interno do RV para fluir com a tela
             rvSubSintomas.isNestedScrollingEnabled = false
         }
     }
 
-    private fun exibirOuEsconderCampo(label: TextView, campo: TextView, valor: String?) {
-        if (valor.isNullOrBlank()) {
-            label.visibility = View.GONE
-            campo.visibility = View.GONE
+    private fun exibirOuEsconderCard(card: View, campoTexto: TextView, valor: String?) {
+        if (valor.isNullOrBlank() || valor.equals("null", ignoreCase = true)) {
+            card.visibility = View.GONE
         } else {
-            label.visibility = View.VISIBLE
-            campo.visibility = View.VISIBLE
-            campo.text = valor
+            card.visibility = View.VISIBLE
+            campoTexto.text = valor
         }
     }
 }

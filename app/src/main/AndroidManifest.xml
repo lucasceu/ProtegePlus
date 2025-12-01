@@ -58,6 +58,22 @@
             android:name=".OrgaoActivity"
             android:exported="false" />
 
+        <activity android:name=".NovoTelefoneUtilActivity" android:exported="false" />
+
+        <activity android:name=".MenuEditarActivity" android:exported="false" />
+
+        <activity android:name=".ListaPessoasActivity" android:exported="false" />
+
+        <activity android:name=".EditarPessoaActivity" android:exported="false" />
+
+        <activity android:name=".ListaQuestoesActivity" android:exported="false" />
+
+        <activity android:name=".EditarQuestaoActivity" android:exported="false" />
+
+        <activity android:name=".TesteConhecimentoActivity" android:exported="false" />
+
+        <activity android:name=".ListaTelefonesActivity" android:exported="false" />
+
     </application>
 
 </manifest>

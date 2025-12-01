@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/btnSalvarQuestao"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enunciado da Questão"
+                android:textColor="@color/protegeRed"
+                android:textSize="20sp"
+                android:fontFamily="@font/nunito_sans_bold" />
+
+            <EditText
+                android:id="@+id/etEnunciado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/rounded_edittext"
+                android:hint="Digite a pergunta aqui..."
+                android:gravity="top|start"
+                android:minLines="3"
+                android:padding="12dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Alternativas"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:fontFamily="@font/nunito_sans_bold" />
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+                <TextView android:layout_width="30dp" android:layout_height="wrap_content" android:text="A)" android:textStyle="bold" android:textSize="16sp" android:layout_gravity="center_vertical"/>
+                <EditText android:id="@+id/etAltA" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/rounded_edittext" android:hint="Opção A" android:padding="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+                <TextView android:layout_width="30dp" android:layout_height="wrap_content" android:text="B)" android:textStyle="bold" android:textSize="16sp" android:layout_gravity="center_vertical"/>
+                <EditText android:id="@+id/etAltB" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/rounded_edittext" android:hint="Opção B" android:padding="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+                <TextView android:layout_width="30dp" android:layout_height="wrap_content" android:text="C)" android:textStyle="bold" android:textSize="16sp" android:layout_gravity="center_vertical"/>
+                <EditText android:id="@+id/etAltC" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/rounded_edittext" android:hint="Opção C" android:padding="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+                <TextView android:layout_width="30dp" android:layout_height="wrap_content" android:text="D)" android:textStyle="bold" android:textSize="16sp" android:layout_gravity="center_vertical"/>
+                <EditText android:id="@+id/etAltD" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/rounded_edittext" android:hint="Opção D" android:padding="10dp"/>
+            </LinearLayout>
+
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="8dp">
+                <TextView android:layout_width="30dp" android:layout_height="wrap_content" android:text="E)" android:textStyle="bold" android:textSize="16sp" android:layout_gravity="center_vertical"/>
+                <EditText android:id="@+id/etAltE" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/rounded_edittext" android:hint="Opção E (Opcional)" android:padding="10dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Gabarito (Resposta Correta)"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:fontFamily="@font/nunito_sans_bold" />
+
+            <Spinner
+                android:id="@+id/spinnerGabarito"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/rounded_edittext" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnSalvarQuestao"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_margin="16dp"
+        android:background="@drawable/rounded_button"
+        android:text="Salvar Questão"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        android:fontFamily="@font/nunito_sans_bold"
+        android:textAllCaps="false"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

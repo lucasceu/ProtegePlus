@@ -13,8 +13,8 @@ import java.io.InputStream
 import java.io.OutputStream
 
 // --- VERSÃO ATUALIZADA PARA 10 ---
-private const val DATABASE_NAME = "BD_Protege_v10.db"
-private const val DATABASE_VERSION = 10
+private const val DATABASE_NAME = "BD_Protege_v12.db"
+private const val DATABASE_VERSION = 11
 private const val TABLE_PESSOA = "pessoa"
 
 class DatabaseHelper(private val context: Context) :
@@ -74,9 +74,9 @@ class DatabaseHelper(private val context: Context) :
 
     // --- USUÁRIOS E LOGIN ---
 
-    fun adicionarUsuario(usuario: Usuario): Long { // Mudou de Boolean para Long
+    fun adicionarUsuario(usuario: Usuario): Long {
         if (usuario.email.isBlank() || usuario.senhaPlana.isBlank() || usuario.nome.isBlank()) {
-            return -1L
+            return -1L // Retorna erro
         }
 
         val db = this.writableDatabase
@@ -87,16 +87,20 @@ class DatabaseHelper(private val context: Context) :
             put("Empresa", usuario.empresa)
             put("Email", usuario.email)
             put("Senha", usuario.senhaPlana)
+            // Os telefones novos
+            put("Telefone1", usuario.telefone1)
+            put("Telefone2", usuario.telefone2)
         }
 
         return try {
-            val newRowId = db.insertOrThrow(TABLE_PESSOA, null, values)
+            // insertOrThrow retorna o ID da linha inserida (Long)
+            val newRowId = db.insertOrThrow("pessoa", null, values)
             db.close()
-            newRowId // Retorna o ID gerado (ex: 1, 2, 3...)
-        } catch (e: SQLiteException) {
+            newRowId // Retorna o ID (ex: 1, 5, 42...)
+        } catch (e: Exception) {
             e.printStackTrace()
             db.close()
-            -1L
+            -1L // Retorna -1 se falhar
         }
     }
 
@@ -122,7 +126,7 @@ class DatabaseHelper(private val context: Context) :
         val values = ContentValues().apply {
             put("Numero", numero)
             put("Unidadesaude", nomeLocal)
-            putNull("IdPessoa_FK") // NULL = É PÚBLICO
+            // Não precisa mais de IdPessoa_FK
         }
         return try {
             db.insertOrThrow("telefonesuteis", null, values)
@@ -156,10 +160,17 @@ class DatabaseHelper(private val context: Context) :
         val db = this.readableDatabase
         var cursor: Cursor? = null
         try {
-            // O PULO DO GATO: WHERE IdPessoa_FK IS NULL
-            val selection = "IdPessoa_FK IS NULL"
-
-            cursor = db.query("telefonesuteis", arrayOf("IdTelefone", "Numero", "Unidadesaude"), selection, null, null, null, "Unidadesaude ASC")
+            // CORREÇÃO: Removemos a selection "IdPessoa_FK IS NULL"
+            // Agora trazemos TUDO o que está na tabela
+            cursor = db.query(
+                "telefonesuteis",
+                arrayOf("IdTelefone", "Numero", "Unidadesaude"),
+                null, // selection = null (sem filtro)
+                null,
+                null,
+                null,
+                "Unidadesaude ASC"
+            )
 
             if (cursor != null && cursor.moveToFirst()) {
                 do {
@@ -169,7 +180,12 @@ class DatabaseHelper(private val context: Context) :
                     lista.add(TelefoneUtil(id, numero, unidade))
                 } while (cursor.moveToNext())
             }
-        } catch (e: Exception) { e.printStackTrace() } finally { cursor?.close(); db.close() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            cursor?.close()
+            db.close()
+        }
         return lista
     }
 
@@ -396,5 +412,305 @@ class DatabaseHelper(private val context: Context) :
             db.close()
         }
         return mapa
+    }
+
+    // --- LISTAR TODAS AS PESSOAS ---
+    fun getTodasPessoas(): List<Usuario> {
+        val lista = mutableListOf<Usuario>()
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+        try {
+            cursor = db.query("pessoa", null, null, null, null, null, "Nome ASC")
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    val id = cursor.getInt(cursor.getColumnIndexOrThrow("IdPessoa"))
+                    val nome = cursor.getString(cursor.getColumnIndexOrThrow("Nome"))
+                    val cpf = cursor.getString(cursor.getColumnIndexOrThrow("CPF"))
+                    val cargo = cursor.getString(cursor.getColumnIndexOrThrow("Cargo"))
+                    val empresa = cursor.getString(cursor.getColumnIndexOrThrow("Empresa"))
+                    val email = cursor.getString(cursor.getColumnIndexOrThrow("Email"))
+                    val senha = cursor.getString(cursor.getColumnIndexOrThrow("Senha"))
+                    val tel1 = cursor.getString(cursor.getColumnIndexOrThrow("Telefone1"))
+                    val tel2 = cursor.getString(cursor.getColumnIndexOrThrow("Telefone2"))
+
+                    lista.add(Usuario(id, nome, cpf, cargo, empresa, email, senha, tel1, tel2))
+                } while (cursor.moveToNext())
+            }
+        } catch (e: Exception) { e.printStackTrace() } finally { cursor?.close(); db.close() }
+        return lista
+    }
+
+    // --- ATUALIZAR PESSOA ---
+    fun atualizarPessoa(usuario: Usuario): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put("Nome", usuario.nome)
+            put("CPF", usuario.cpf)
+            put("Cargo", usuario.cargo)
+            put("Empresa", usuario.empresa)
+            put("Email", usuario.email)
+            put("Telefone1", usuario.telefone1)
+            put("Telefone2", usuario.telefone2)
+            // Senha opcional: só atualiza se não estiver vazia (lógica de segurança básica)
+            if (usuario.senhaPlana.isNotBlank()) {
+                put("Senha", usuario.senhaPlana)
+            }
+        }
+        return try {
+            val linhasAfetadas = db.update("pessoa", values, "IdPessoa = ?", arrayOf(usuario.id.toString()))
+            db.close()
+            linhasAfetadas > 0
+        } catch (e: Exception) {
+            db.close()
+            false
+        }
+    }
+
+    // --- DELETAR PESSOA ---
+    fun deletarPessoa(idPessoa: Int): Boolean {
+        val db = this.writableDatabase
+        return try {
+            val linhas = db.delete("pessoa", "IdPessoa = ?", arrayOf(idPessoa.toString()))
+            db.close()
+            linhas > 0
+        } catch (e: Exception) {
+            db.close()
+            false
+        }
+    }
+
+    fun getTodasQuestoes(): List<Questao> {
+        val lista = mutableListOf<Questao>()
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+        try {
+            cursor = db.query("questao_questionario", null, null, null, null, null, "IdQuestao DESC")
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    val id = cursor.getInt(cursor.getColumnIndexOrThrow("IdQuestao"))
+                    val desc = cursor.getString(cursor.getColumnIndexOrThrow("Descricao"))
+                    val resp = cursor.getString(cursor.getColumnIndexOrThrow("Resposta_correta"))
+                    // Ignorando FKs por enquanto para simplificar a listagem
+                    lista.add(Questao(id, desc, resp))
+                } while (cursor.moveToNext())
+            }
+        } catch (e: Exception) { e.printStackTrace() } finally { cursor?.close(); db.close() }
+        return lista
+    }
+
+    fun adicionarQuestao(questao: Questao): Long {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put("Descricao", questao.descricao)
+            put("Resposta_correta", questao.respostaCorreta)
+            // Se quiser vincular ao usuário logado futuramente:
+            // put("IdPessoa_FK", questao.idPessoaFk)
+        }
+        return try {
+            val id = db.insertOrThrow("questao_questionario", null, values)
+            db.close()
+            id
+        } catch (e: Exception) {
+            db.close()
+            -1L
+        }
+    }
+
+    fun deletarQuestao(idQuestao: Int): Boolean {
+        val db = this.writableDatabase
+        return try {
+            // 1. Deleta as alternativas primeiro (limpeza)
+            db.delete("resposta_questionario", "IdQuestao_FK = ?", arrayOf(idQuestao.toString()))
+            // 2. Deleta a questão
+            val linhas = db.delete("questao_questionario", "IdQuestao = ?", arrayOf(idQuestao.toString()))
+            db.close()
+            linhas > 0
+        } catch (e: Exception) {
+            db.close()
+            false
+        }
+    }
+
+    fun getAlternativas(idQuestao: Int): List<Alternativa> {
+        val lista = mutableListOf<Alternativa>()
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+        try {
+            cursor = db.query(
+                "resposta_questionario",
+                null,
+                "IdQuestao_FK = ?",
+                arrayOf(idQuestao.toString()),
+                null, null, "Letra ASC"
+            )
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    val id = cursor.getInt(cursor.getColumnIndexOrThrow("IdResposta"))
+                    val letra = cursor.getString(cursor.getColumnIndexOrThrow("Letra"))
+                    val desc = cursor.getString(cursor.getColumnIndexOrThrow("Descricao"))
+                    val idFk = cursor.getInt(cursor.getColumnIndexOrThrow("IdQuestao_FK"))
+                    lista.add(Alternativa(id, letra, desc, idFk))
+                } while (cursor.moveToNext())
+            }
+        } catch (e: Exception) { e.printStackTrace() } finally { cursor?.close(); db.close() }
+        return lista
+    }
+
+    fun adicionarAlternativa(alt: Alternativa): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put("Letra", alt.letra)
+            put("Descricao", alt.descricao)
+            put("IdQuestao_FK", alt.idQuestaoFk)
+        }
+        return try {
+            db.insertOrThrow("resposta_questionario", null, values)
+            db.close()
+            true
+        } catch (e: Exception) {
+            db.close()
+            false
+        }
+    }
+
+    fun atualizarQuestao(questao: Questao): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put("Descricao", questao.descricao)
+            put("Resposta_correta", questao.respostaCorreta)
+        }
+        return try {
+            val rows = db.update("questao_questionario", values, "IdQuestao = ?", arrayOf(questao.id.toString()))
+            db.close()
+            rows > 0
+        } catch (e: Exception) {
+            db.close()
+            false
+        }
+    }
+
+    // Método auxiliar para limpar alternativas antes de salvar as novas na edição
+    fun deletarAlternativasDaQuestao(idQuestao: Int) {
+        val db = this.writableDatabase
+        try {
+            db.delete("resposta_questionario", "IdQuestao_FK = ?", arrayOf(idQuestao.toString()))
+            db.close()
+        } catch (e: Exception) { db.close() }
+    }
+
+    // --- MÉTODOS PARA O TESTE DE CONHECIMENTO (QUIZ) ---
+
+    /**
+     * Retorna apenas os IDs de todas as questões.
+     * Usamos isso para fazer o embaralhamento (shuffle) leve, sem carregar tudo de vez.
+     */
+    fun getListaIdsQuestoes(): List<Int> {
+        val listaIds = mutableListOf<Int>()
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+        try {
+            cursor = db.query("questao_questionario", arrayOf("IdQuestao"), null, null, null, null, null)
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    val id = cursor.getInt(0)
+                    listaIds.add(id)
+                } while (cursor.moveToNext())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            cursor?.close()
+            db.close()
+        }
+        return listaIds
+    }
+
+    /**
+     * Monta o objeto completo (Questão + Alternativas) dado um ID.
+     */
+    fun getQuestaoCompleta(idQuestao: Int): QuestaoCompleta? {
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+        var questaoEncontrada: Questao? = null
+
+        // 1. Busca a Questão
+        try {
+            cursor = db.query(
+                "questao_questionario",
+                null,
+                "IdQuestao = ?",
+                arrayOf(idQuestao.toString()),
+                null, null, null
+            )
+            if (cursor != null && cursor.moveToFirst()) {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("IdQuestao"))
+                val desc = cursor.getString(cursor.getColumnIndexOrThrow("Descricao"))
+                val resp = cursor.getString(cursor.getColumnIndexOrThrow("Resposta_correta"))
+                // fkPessoa e fkProcedimento podem ser nulos, ignoramos por enquanto no Quiz
+                questaoEncontrada = Questao(id, desc, resp)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return null
+        } finally {
+            cursor?.close()
+            // Não fecha o DB ainda, vamos usar para as alternativas!
+        }
+
+        if (questaoEncontrada == null) return null
+
+        // 2. Busca as Alternativas dessa questão
+        // Reutilizamos a função getAlternativas que já criamos antes!
+        // Como ela abre e fecha o banco, vamos ter que reabrir ou confiar nela.
+        // O ideal é que getAlternativas gerencie sua própria conexão, o que ela faz.
+        // Mas como fechamos o cursor ali em cima, mas não o 'db' (porque getAlternativas usa 'this.readableDatabase'),
+        // precisamos ter cuidado.
+        // No Android SQLiteOpenHelper, chamar 'readableDatabase' várias vezes retorna a mesma instância se já estiver aberta.
+        // Vamos chamar direto:
+
+        val listaAlternativas = getAlternativas(idQuestao)
+
+        return QuestaoCompleta(questaoEncontrada, listaAlternativas)
+    }
+
+    fun getTelefonePorId(id: Int): TelefoneUtil? {
+        var telefone: TelefoneUtil? = null
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+        try {
+            cursor = db.query("telefonesuteis", arrayOf("IdTelefone", "Numero", "Unidadesaude"), "IdTelefone = ?", arrayOf(id.toString()), null, null, null)
+            if (cursor != null && cursor.moveToFirst()) {
+                telefone = TelefoneUtil(cursor.getInt(0), cursor.getString(1), cursor.getString(2))
+            }
+        } catch (e: Exception) { e.printStackTrace() } finally { cursor?.close(); db.close() }
+        return telefone
+    }
+
+    fun atualizarTelefoneUtil(telefone: TelefoneUtil): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put("Unidadesaude", telefone.unidadeSaude)
+            put("Numero", telefone.numero)
+        }
+        return try {
+            val rows = db.update("telefonesuteis", values, "IdTelefone = ?", arrayOf(telefone.id.toString()))
+            db.close()
+            rows > 0
+        } catch (e: Exception) {
+            db.close()
+            false
+        }
+    }
+
+    fun deletarTelefoneUtil(id: Int): Boolean {
+        val db = this.writableDatabase
+        return try {
+            val rows = db.delete("telefonesuteis", "IdTelefone = ?", arrayOf(id.toString()))
+            db.close()
+            rows > 0
+        } catch (e: Exception) {
+            db.close()
+            false
+        }
     }
 }

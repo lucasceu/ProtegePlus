@@ -16,13 +16,34 @@ import java.util.Locale
 
 class VerificadorSintomasActivity : AppCompatActivity() {
 
+    // --- MAPA DE ÍCONES (Baseado no seu print) ---
+    private val CIAP_ICON_MAP = mapOf(
+        "A" to R.drawable.ic_categoria_gerais,
+        "B" to R.drawable.ic_categoria_gerais,           // Sangue (sem ícone específico, usando gerais)
+        "D" to R.drawable.ic_categoria_gastrointestinais,
+        "F" to R.drawable.ic_categoria_oculares,
+        "H" to R.drawable.ic_categoria_auditivos,
+        "K" to R.drawable.ic_categoria_cardiovasculares,
+        "L" to R.drawable.ic_categoria_musculoesqueleticos,
+        "N" to R.drawable.ic_categoria_neurologicos,
+        "P" to R.drawable.ic_categoria_gerais,           // Psicológico (sem ícone específico)
+        "R" to R.drawable.ic_categoria_respiratorios,
+        "S" to R.drawable.ic_categoria_dermatologicos,
+        "T" to R.drawable.ic_categoria_gerais,           // Endócrino (sem ícone específico)
+        "U" to R.drawable.ic_categoria_geniturinarios,
+        "W" to R.drawable.ic_categoria_geniturinarios,   // Gravidez (usando geniturinário)
+        "X" to R.drawable.ic_categoria_geniturinarios,   // Genital F
+        "Y" to R.drawable.ic_categoria_geniturinarios,   // Genital M
+        "Z" to R.drawable.ic_categoria_gerais            // Social
+    )
+
     private lateinit var dbHelper: DatabaseHelper
     private lateinit var rvSintomas: RecyclerView
     private lateinit var adapter: VerificadorSintomasAdapter
     private lateinit var etBusca: EditText
 
     private val listaSintomasOriginal = mutableListOf<SintomaCheckbox>()
-    // Mapa de capítulos: "L" -> "Sistema musculoesquelético"
+    // Mapa: "L" -> "Sistema Musculoesquelético"
     private var mapCapitulos: Map<String, String> = emptyMap()
 
     private val letrasExpandidas = mutableSetOf<String>()
@@ -47,35 +68,35 @@ class VerificadorSintomasActivity : AppCompatActivity() {
         rvSintomas = findViewById(R.id.rvSintomasCheckbox)
         etBusca = findViewById(R.id.etBuscarSintoma)
 
-        // 1. Carrega o mapa de capítulos (A -> Geral, L -> Músculo...)
+        // 1. Carrega Dicionário de Capítulos
         mapCapitulos = dbHelper.getMapLetrasCiap2()
 
-        // 2. Carrega sintomas
+        // 2. Carrega Sintomas do Banco
         val dadosBanco = dbHelper.getSintomasPuros()
 
-        // 3. Filtra "Lixo" imediatamente: Só aceita se o código começar com uma letra válida do mapa
+        // 3. Filtra Lixo: Só aceita se a letra do código (ex: 'L') existir no mapa
         val dadosValidos = dadosBanco.filter { item ->
             val letraCodigo = item.codigo.firstOrNull()?.toString()?.uppercase()
             mapCapitulos.containsKey(letraCodigo)
         }
 
+        // Ordena por nome do sintoma
         listaSintomasOriginal.addAll(
-            dadosValidos.map { SintomaCheckbox(it) }
-                .sortedBy { it.item.nome } // Ordena alfabeticamente pelo nome dentro do grupo
+            dadosValidos.map { SintomaCheckbox(it) }.sortedBy { it.item.nome }
         )
 
         // 4. Configura Adapter
         adapter = VerificadorSintomasAdapter(emptyList()) { headerClicado ->
-            toggleSection(headerClicado.letter) // Aqui 'letter' será o Nome Completo do Capítulo
+            toggleSection(headerClicado.letter)
         }
 
         rvSintomas.layoutManager = LinearLayoutManager(this)
         rvSintomas.adapter = adapter
 
-        // 5. Exibe lista inicial
+        // 5. Gera a lista visual inicial
         atualizarListaVisual("")
 
-        // Botões e Listeners
+        // Listeners
         findViewById<View>(R.id.btnBuscarEnfermidades).setOnClickListener {
             val selecionados = buscarCodigosSelecionadosGlobais()
             if (selecionados.isEmpty()) {
@@ -115,32 +136,34 @@ class VerificadorSintomasActivity : AppCompatActivity() {
         val termo = query.lowercase(Locale.getDefault())
         val isBuscando = termo.isNotEmpty()
 
-        // 1. Filtra itens pelo nome
+        // 1. Filtra itens
         val itensFiltrados = if (isBuscando) {
-            listaSintomasOriginal.filter {
-                it.item.nome?.lowercase(Locale.getDefault())?.contains(termo) == true
-            }
+            listaSintomasOriginal.filter { it.item.nome?.lowercase(Locale.getDefault())?.contains(termo) == true }
         } else {
             listaSintomasOriginal
         }
 
-        // 2. Agrupa pelo CAPÍTULO (baseado na primeira letra do CÓDIGO)
-        // Ex: L81 -> Pega 'L' -> Busca no Map -> Agrupa sob "Sistema musculoesquelético"
+        // 2. Agrupa por NOME DO CAPÍTULO (Não mais só pela letra)
         val mapaAgrupado = itensFiltrados.groupBy { sintoma ->
             val letraCodigo = sintoma.item.codigo.firstOrNull()?.toString()?.uppercase() ?: ""
-            // Se tiver no mapa, usa a descrição. Se não (teoricamente já filtramos), usa "Outros"
             mapCapitulos[letraCodigo] ?: "Outros"
         }.toSortedMap()
 
-        // 3. Constrói a lista visual
+        // 3. Monta a lista visual
         val listaDisplay = mutableListOf<SintomaListItem>()
 
         for ((nomeCapitulo, listaItens) in mapaAgrupado) {
-            // Se buscando, expande tudo. Se não, respeita o clique.
+            // Se buscando, abre tudo. Se não, respeita o clique.
             val isExpandido = isBuscando || letrasExpandidas.contains(nomeCapitulo)
 
-            // Adiciona Cabeçalho com o Nome Bonito (ex: "Olhos")
-            listaDisplay.add(SintomaListItem.Separator(nomeCapitulo, isExpandido, listaItens.size))
+            // Descobre qual é a letra desse grupo (pega do primeiro item) para achar o ícone
+            val letraCodigo = listaItens.firstOrNull()?.item?.codigo?.firstOrNull()?.toString()?.uppercase() ?: ""
+
+            // Pega o ícone do mapa, ou usa o genérico
+            val iconId = CIAP_ICON_MAP[letraCodigo] ?: R.drawable.ic_categoria_gerais
+
+            // Cria o separador visual
+            listaDisplay.add(SintomaListItem.Separator(nomeCapitulo, isExpandido, iconId))
 
             if (isExpandido) {
                 listaItens.forEach {

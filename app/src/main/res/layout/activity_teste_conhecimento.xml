@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:padding="16dp"
+    tools:context=".TesteConhecimentoActivity">
+
+    <TextView
+        android:id="@+id/tvProtegeTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PROTEGE +"
+        android:textColor="#D32F2F"
+        android:textSize="24sp"
+        android:fontFamily="@font/nunito_sans_bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvHeaderTeste"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Teste de Conhecimento"
+        android:fontFamily="@font/nunito_sans_regular"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvProtegeTitle" />
+
+    <TextView
+        android:id="@+id/tvContadorQuestao"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Questão 1/?"
+        android:textColor="@color/protegeTeal"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tvProtegeTitle"
+        app:layout_constraintBottom_toBottomOf="@+id/tvHeaderTeste"/>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toBottomOf="@id/tvHeaderTeste"/>
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        app:layout_constraintBottom_toTopOf="@+id/btnConfirmarResposta"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvEnunciado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Carregando pergunta..."
+                android:textColor="@color/black"
+                android:textSize="20sp"
+                android:fontFamily="@font/nunito_sans_bold"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="24dp"/>
+
+            <RadioGroup
+                android:id="@+id/rgAlternativas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/tvFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Resposta Correta!"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:visibility="gone"
+                tools:visibility="visible"
+                tools:textColor="@color/protegeTeal"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnConfirmarResposta"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:background="@drawable/rounded_button"
+        android:text="Confirmar Resposta"
+        android:textAllCaps="false"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:fontFamily="@font/nunito_sans_bold"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

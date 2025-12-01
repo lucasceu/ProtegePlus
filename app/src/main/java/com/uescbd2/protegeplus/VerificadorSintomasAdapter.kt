@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 
 class VerificadorSintomasAdapter(
     private var itensExibidos: List<SintomaListItem>,
-    // Callback: Quando clicar numa letra, avisa a Activity
     private val onHeaderClick: (SintomaListItem.Separator) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -66,16 +65,21 @@ class VerificadorSintomasAdapter(
 
     inner class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvHeader: TextView = itemView.findViewById(R.id.tvHeaderLetra)
+        private val ivIcon: ImageView = itemView.findViewById(R.id.ivHeaderIcon)
         private val ivChevron: ImageView = itemView.findViewById(R.id.ivChevron)
 
         fun bind(separator: SintomaListItem.Separator) {
-            tvHeader.text = "${separator.letter}  (${separator.count})"
+            // Exibe apenas o nome (sem números)
+            tvHeader.text = separator.letter
 
-            // Gira a seta dependendo se está expandido ou não
+            // Define o ícone correto
+            ivIcon.setImageResource(separator.iconResId)
+
+            // Gira a seta
             if (separator.isExpanded) {
-                ivChevron.rotation = 180f // Seta pra cima
+                ivChevron.rotation = 180f
             } else {
-                ivChevron.rotation = 0f   // Seta pra baixo
+                ivChevron.rotation = 0f
             }
 
             itemView.setOnClickListener {

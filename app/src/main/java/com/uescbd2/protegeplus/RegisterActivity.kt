@@ -64,20 +64,15 @@ class RegisterActivity : AppCompatActivity() {
                 nome = nome,
                 cpf = cpfOuMatricula.ifEmpty { null },
                 cargo = cargo.ifEmpty { null },
-                telefone = null, // Ignora aqui, pois não vai pra tabela pessoa
                 empresa = null,
                 email = email,
-                senhaPlana = senha
+                senhaPlana = senha,
+                telefone1 = telefone.ifEmpty { null } // Passa direto!
             )
 
             // 1. Tenta salvar o usuário e PEGA O ID
             val novoId = dbHelper.adicionarUsuario(novoUsuario)
-
             if (novoId != -1L) {
-                // 2. Se deu certo, salva o telefone na outra tabela vinculando o ID
-                if (telefone.isNotEmpty()) {
-                    dbHelper.adicionarTelefonePessoal(novoId, telefone)
-                }
 
                 Toast.makeText(this, "Cadastro realizado com sucesso!", Toast.LENGTH_SHORT).show()
                 finish()

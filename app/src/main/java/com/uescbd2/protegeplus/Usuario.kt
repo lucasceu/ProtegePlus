@@ -5,12 +5,13 @@ package com.uescbd2.protegeplus
  * Nomes dos campos NÃO PRECISAM bater com o banco, pois o DatabaseHelper faz a tradução.
  */
 data class Usuario(
-    val IdPessoa: Int = 0, // O padrão 0 será ignorado pelo DatabaseHelper
+    val id: Int = 0, // IdPessoa no banco
     val nome: String,
     val cpf: String?,
     val cargo: String?,
-    val telefone: String?,
     val empresa: String?,
     val email: String,
-    val senhaPlana: String
+    val senhaPlana: String,
+    val telefone1: String? = null,
+    val telefone2: String? = null
 )

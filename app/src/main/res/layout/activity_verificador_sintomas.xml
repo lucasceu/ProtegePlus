@@ -118,7 +118,7 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/rounded_button"
+            android:background="@drawable/rounded_button_red"
             android:text="Buscar Enfermidades"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
@@ -129,10 +129,10 @@
             android:id="@+id/btnLimparSelecao"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@drawable/rounded_button_outline"
+            android:background="@drawable/rounded_button_outline_red"
             android:text="Limpar Seleção"
             android:textAllCaps="false"
-            android:textColor="@color/protegeTeal"
+            android:textColor="@color/protegeRed"
             android:fontFamily="@font/nunito_sans_bold"
             android:textSize="18sp" />
 

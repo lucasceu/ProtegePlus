@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import kotlin.Unit; // Importante para o retorno do lambda Kotlin
+
 public class ServicosEmergenciaActivity extends AppCompatActivity {
 
     private DatabaseHelper dbHelper;
@@ -53,6 +55,7 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
         rvEmergencia = findViewById(R.id.rvEmergencia);
         tvEmptyState = findViewById(R.id.tvEmptyState);
 
+        // Chama o método corrigido (que agora traz todos os telefones)
         List<TelefoneUtil> listaDeTelefones = dbHelper.getTelefonesUteis();
 
         if (listaDeTelefones.isEmpty()) {
@@ -62,16 +65,24 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
             tvEmptyState.setVisibility(View.GONE);
             rvEmergencia.setVisibility(View.VISIBLE);
 
-            adapter = new TelefoneAdapter(this, listaDeTelefones, telefone -> {
-                if (telefone.getNumero() != null && !telefone.getNumero().isEmpty()) {
-                    Intent intent = new Intent(Intent.ACTION_DIAL);
-                    intent.setData(Uri.parse("tel:" + telefone.getNumero()));
-                    startActivity(intent);
-                } else {
-                    Toast.makeText(this, "Número não disponível", Toast.LENGTH_SHORT).show();
-                }
-                return null;
-            });
+            // ADAPTADO PARA O NOVO CONSTRUTOR DO ADAPTER KOTLIN
+            adapter = new TelefoneAdapter(this, listaDeTelefones,
+                    // 1. Clique Simples: Ligar
+                    telefone -> {
+                        if (telefone.getNumero() != null && !telefone.getNumero().isEmpty()) {
+                            Intent intent = new Intent(Intent.ACTION_DIAL);
+                            intent.setData(Uri.parse("tel:" + telefone.getNumero()));
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(this, "Número não disponível", Toast.LENGTH_SHORT).show();
+                        }
+                        return Unit.INSTANCE; // Retorno obrigatório para Kotlin
+                    },
+                    // 2. Clique Longo: Vazio (Não faz nada na tela pública)
+                    telefone -> {
+                        return Unit.INSTANCE;
+                    }
+            );
 
             rvEmergencia.setLayoutManager(new LinearLayoutManager(this));
             rvEmergencia.setAdapter(adapter);
@@ -82,6 +93,7 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateButtonVisibility();
+        // Recarregar lista aqui se quiser que atualize ao voltar
     }
 
     private void updateButtonVisibility() {

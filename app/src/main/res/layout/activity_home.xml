@@ -30,7 +30,37 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"/>
 
-        <!-- Botão de Login (visível por padrão) -->
+        <LinearLayout
+            android:id="@+id/btnEditarDados"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?android:attr/selectableItemBackground"
+            android:padding="8dp"
+            app:layout_constraintEnd_toStartOf="@+id/buttonLogin"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="@color/protegeTeal"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Editar"
+                android:fontFamily="@font/nunito_sans_semi_bold"
+                android:textColor="@color/protegeTeal"
+                android:textSize="14sp"
+                android:layout_marginStart="4dp"/>
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/buttonLogin"
             android:layout_width="wrap_content"
@@ -54,7 +84,6 @@
 
         </LinearLayout>
 
-        <!-- Botão de Logout (oculto por padrão) -->
         <LinearLayout
             android:id="@+id/buttonLogout"
             android:layout_width="wrap_content"

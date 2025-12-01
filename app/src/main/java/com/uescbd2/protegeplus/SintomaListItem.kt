@@ -1,12 +1,13 @@
 package com.uescbd2.protegeplus
 
 sealed class SintomaListItem {
-    // Agora o Separator sabe se está aberto ou fechado
+    // Cabeçalho: Nome, Estado (Aberto/Fechado) e Ícone
     data class Separator(
-        val letter: String,
+        val letter: String, // Nome do Capítulo Completo
         var isExpanded: Boolean = false,
-        val count: Int // Opcional: mostrar quantos itens tem (ex: "A (5)")
+        val iconResId: Int // ID do Drawable
     ) : SintomaListItem()
 
+    // Item: O sintoma em si
     data class Item(val data: SintomaCheckbox) : SintomaListItem()
 }

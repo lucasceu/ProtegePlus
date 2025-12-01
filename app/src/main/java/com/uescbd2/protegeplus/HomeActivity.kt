@@ -13,6 +13,7 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var buttonLogin: LinearLayout
     private lateinit var buttonLogout: LinearLayout
+    private lateinit var btnEditarDados: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,8 +21,14 @@ class HomeActivity : AppCompatActivity() {
 
         buttonLogin = findViewById(R.id.buttonLogin)
         buttonLogout = findViewById(R.id.buttonLogout)
+        btnEditarDados = findViewById(R.id.btnEditarDados)
 
-        // Ações de clique dos botões
+        // Botão Editar Dados
+        btnEditarDados.setOnClickListener {
+            val intent = Intent(this, MenuEditarActivity::class.java)
+            startActivity(intent)
+        }
+
         buttonLogin.setOnClickListener {
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
@@ -53,13 +60,14 @@ class HomeActivity : AppCompatActivity() {
         }
 
         cardTeste.setOnClickListener {
-            Toast.makeText(this, "Teste de Conhecimento ainda não implementado.", Toast.LENGTH_SHORT).show()
+            // CORREÇÃO: Abre a tela do Quiz
+            val intent = Intent(this, TesteConhecimentoActivity::class.java)
+            startActivity(intent)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        // Atualiza a visibilidade dos botões toda vez que a tela é exibida
         updateButtonVisibility()
     }
 
