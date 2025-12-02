@@ -9,14 +9,17 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
 
-import kotlin.Unit; // Importante para o retorno do lambda Kotlin
+import kotlin.Unit;
 
 public class ServicosEmergenciaActivity extends AppCompatActivity {
 
@@ -24,6 +27,7 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
     private RecyclerView rvEmergencia;
     private TelefoneAdapter adapter;
     private TextView tvEmptyState;
+    private EditText etPesquisar;
 
     private LinearLayout buttonLogin;
     private LinearLayout buttonLogout;
@@ -33,6 +37,7 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_servicos_emergencia);
 
+        // --- Inicialização dos Botões de Login/Logout ---
         buttonLogin = findViewById(R.id.buttonLogin);
         buttonLogout = findViewById(R.id.buttonLogout);
 
@@ -51,11 +56,13 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
             updateButtonVisibility();
         });
 
+        // --- Inicialização da Lista e Banco ---
         dbHelper = new DatabaseHelper(this);
         rvEmergencia = findViewById(R.id.rvEmergencia);
         tvEmptyState = findViewById(R.id.tvEmptyState);
+        etPesquisar = findViewById(R.id.etPesquisar);
 
-        // Chama o método corrigido (que agora traz todos os telefones)
+        // Busca todos os telefones (sem filtro de ID, pois a coluna foi removida)
         List<TelefoneUtil> listaDeTelefones = dbHelper.getTelefonesUteis();
 
         if (listaDeTelefones.isEmpty()) {
@@ -65,9 +72,9 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
             tvEmptyState.setVisibility(View.GONE);
             rvEmergencia.setVisibility(View.VISIBLE);
 
-            // ADAPTADO PARA O NOVO CONSTRUTOR DO ADAPTER KOTLIN
+            // Instancia o Adapter Kotlin
             adapter = new TelefoneAdapter(this, listaDeTelefones,
-                    // 1. Clique Simples: Ligar
+                    // 1. Clique Simples: Ligar para o número
                     telefone -> {
                         if (telefone.getNumero() != null && !telefone.getNumero().isEmpty()) {
                             Intent intent = new Intent(Intent.ACTION_DIAL);
@@ -76,9 +83,9 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
                         } else {
                             Toast.makeText(this, "Número não disponível", Toast.LENGTH_SHORT).show();
                         }
-                        return Unit.INSTANCE; // Retorno obrigatório para Kotlin
+                        return Unit.INSTANCE; // Retorno obrigatório para interoperabilidade com Kotlin
                     },
-                    // 2. Clique Longo: Vazio (Não faz nada na tela pública)
+                    // 2. Clique Longo: Não faz nada nesta tela pública
                     telefone -> {
                         return Unit.INSTANCE;
                     }
@@ -86,6 +93,22 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
 
             rvEmergencia.setLayoutManager(new LinearLayoutManager(this));
             rvEmergencia.setAdapter(adapter);
+
+            // --- Lógica de Pesquisa (Filtro) ---
+            etPesquisar.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    if (adapter != null) {
+                        adapter.filtrar(s.toString());
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
         }
     }
 
@@ -93,7 +116,6 @@ public class ServicosEmergenciaActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateButtonVisibility();
-        // Recarregar lista aqui se quiser que atualize ao voltar
     }
 
     private void updateButtonVisibility() {

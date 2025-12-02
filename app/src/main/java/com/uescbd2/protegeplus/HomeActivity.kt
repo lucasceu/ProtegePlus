@@ -23,7 +23,7 @@ class HomeActivity : AppCompatActivity() {
         buttonLogout = findViewById(R.id.buttonLogout)
         btnEditarDados = findViewById(R.id.btnEditarDados)
 
-        // Botão Editar Dados
+        // Botão Admin
         btnEditarDados.setOnClickListener {
             val intent = Intent(this, MenuEditarActivity::class.java)
             startActivity(intent)
@@ -49,6 +49,14 @@ class HomeActivity : AppCompatActivity() {
         val cardEmergencia = findViewById<CardView>(R.id.cardEmergencia)
         val cardTeste = findViewById<CardView>(R.id.cardTeste)
 
+        // >>> ADICIONE ESTAS LINHAS AQUI <<<
+        val cardSuporteBasico = findViewById<CardView>(R.id.cardSuporteBasico)
+        cardSuporteBasico.setOnClickListener {
+            // Abre a nova lista de SBV
+            startActivity(Intent(this, SbvActivity::class.java))
+        }
+        // >>> FIM DA ADIÇÃO <<<
+
         cardSintomas.setOnClickListener {
             val intent = Intent(this, GrupoCiapActivity::class.java)
             startActivity(intent)
@@ -60,7 +68,6 @@ class HomeActivity : AppCompatActivity() {
         }
 
         cardTeste.setOnClickListener {
-            // CORREÇÃO: Abre a tela do Quiz
             val intent = Intent(this, TesteConhecimentoActivity::class.java)
             startActivity(intent)
         }

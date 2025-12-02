@@ -713,4 +713,33 @@ class DatabaseHelper(private val context: Context) :
             false
         }
     }
+
+    // --- SUPORTE BÁSICO DE VIDA (SBV) ---
+    fun getItensSBV(): List<ItemSbv> {
+        val lista = mutableListOf<ItemSbv>()
+        val db = this.readableDatabase
+        var cursor: Cursor? = null
+        try {
+            // Busca na tabela sbv_acidentes
+            cursor = db.query("sbv_acidentes", arrayOf("CATEGORIA", "ENFERMIDADE", "SINTOMAS_PROCED"), null, null, null, null, "CATEGORIA ASC, ENFERMIDADE ASC")
+
+            if (cursor != null && cursor.moveToFirst()) {
+                var index = 0
+                do {
+                    val cat = cursor.getString(0) ?: "Geral"
+                    val enf = cursor.getString(1) ?: "Sem título"
+                    val proc = cursor.getString(2) ?: "Sem descrição"
+
+                    // Cria o objeto ItemSbv
+                    lista.add(ItemSbv(index++, cat, enf, proc))
+                } while (cursor.moveToNext())
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            cursor?.close()
+            db.close()
+        }
+        return lista
+    }
 }

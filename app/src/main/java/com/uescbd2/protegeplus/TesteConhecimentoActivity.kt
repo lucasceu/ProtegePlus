@@ -1,13 +1,11 @@
 package com.uescbd2.protegeplus
 
 import android.content.Context
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.ScrollView
@@ -16,6 +14,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 
 class TesteConhecimentoActivity : AppCompatActivity() {
 
@@ -61,10 +60,7 @@ class TesteConhecimentoActivity : AppCompatActivity() {
         rgAlternativas = findViewById(R.id.rgAlternativas)
         btnAcao = findViewById(R.id.btnConfirmarResposta)
         tvFeedback = findViewById(R.id.tvFeedback)
-        scrollView = findViewById(R.id.scrollView) // Certifique-se de ter colocado ID no ScrollView do XML
-
-        // Se o XML não tiver ID no ScrollView, adicione android:id="@+id/scrollView" lá
-        // Se não quiser mexer no XML agora, pode remover a linha do scrollView, é apenas para rolar pro topo
+        scrollView = findViewById(R.id.scrollView)
     }
 
     private fun iniciarJogo() {
@@ -77,7 +73,7 @@ class TesteConhecimentoActivity : AppCompatActivity() {
             return
         }
 
-        // 2. Embaralha (Shuffle) - A mágica do "Aleatório sem repetição"
+        // 2. Embaralha (Shuffle)
         listaIdsQuestoes = todosIds.shuffled()
 
         // 3. Reseta contadores
@@ -104,7 +100,6 @@ class TesteConhecimentoActivity : AppCompatActivity() {
 
         val q = questaoAtualObj
         if (q == null) {
-            // Se der erro ao buscar (ex: deletaram no meio do jogo), pula
             proximaQuestao()
             return
         }
@@ -113,26 +108,36 @@ class TesteConhecimentoActivity : AppCompatActivity() {
         tvContador.text = "Questão ${indiceAtual + 1}/${listaIdsQuestoes.size}"
         tvEnunciado.text = q.questao.descricao
 
-        // Cria os RadioButtons dinamicamente
+        // Cria os RadioButtons dinamicamente (ESTILIZADOS)
         for (alt in q.alternativas) {
             val rb = RadioButton(this)
             rb.id = View.generateViewId()
-            rb.text = "${alt.letra}) ${alt.descricao}"
-            rb.textSize = 16f
-            rb.setPadding(16, 16, 16, 16)
 
-            // Layout Params para dar margem
+            // Texto da Alternativa (Ex: "A) Texto da resposta...")
+            rb.text = "${alt.letra})  ${alt.descricao}"
+
+            // Estilo de Texto
+            rb.textSize = 17f
+            rb.setTextColor(Color.parseColor("#424242")) // Cinza escuro suave
+            // Tenta aplicar a fonte Nunito, se falhar usa padrão
+            try {
+                rb.typeface = ResourcesCompat.getFont(this, R.font.nunito_sans_regular)
+            } catch (e: Exception) { /* Ignora e usa padrão */ }
+
+            // Espaçamento (Padding) e Margem
+            rb.setPadding(24, 24, 24, 24)
+
             val params = RadioGroup.LayoutParams(
                 RadioGroup.LayoutParams.MATCH_PARENT,
                 RadioGroup.LayoutParams.WRAP_CONTENT
             )
-            params.setMargins(0, 0, 0, 16) // Margem inferior
+            params.setMargins(0, 0, 0, 16) // Espaço entre as opções
             rb.layoutParams = params
 
-            // Estilo visual (opcional, borda ou cor)
-            // rb.setBackgroundResource(R.drawable.list_item_border)
+            // Cor da bolinha de seleção (Teal do Protege+)
+            rb.buttonTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.protegeTeal))
 
-            // G GUARDAR A LETRA NA TAG PARA CONFERIR DEPOIS
+            // Guarda a letra na TAG para conferência depois
             rb.tag = alt.letra
 
             rgAlternativas.addView(rb)
@@ -148,7 +153,7 @@ class TesteConhecimentoActivity : AppCompatActivity() {
         }
 
         val rbSelecionado = findViewById<RadioButton>(idSelecionado)
-        val letraSelecionada = rbSelecionado.tag.toString() // Pegamos "A", "B"... da tag
+        val letraSelecionada = rbSelecionado.tag.toString()
         val gabarito = questaoAtualObj?.questao?.respostaCorreta?.trim() ?: ""
 
         isRespondido = true
@@ -164,23 +169,30 @@ class TesteConhecimentoActivity : AppCompatActivity() {
             acertos++
             estilizarOpcao(rbSelecionado, true) // Pinta de Verde
             tvFeedback.text = "Resposta Correta! Muito bem."
-            tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.protegeTeal)) // Teal/Verde
+            tvFeedback.setTextColor(ContextCompat.getColor(this, R.color.protegeTeal))
+            tvFeedback.setBackgroundColor(Color.parseColor("#E0F2F1")) // Fundo verde claro
         } else {
             // ERROU
             estilizarOpcao(rbSelecionado, false) // Pinta de Vermelho
 
-            // Encontra a certa para mostrar ao usuário
+            // Mostra a certa
             val rbCorreto = encontrarRadioButtonPorLetra(gabarito)
             if (rbCorreto != null) {
-                estilizarOpcao(rbCorreto, true) // Pinta a certa de Verde
+                estilizarOpcao(rbCorreto, true)
             }
 
             tvFeedback.text = "Resposta Incorreta. O gabarito é a letra $gabarito."
             tvFeedback.setTextColor(Color.RED)
+            tvFeedback.setBackgroundColor(Color.parseColor("#FFEBEE")) // Fundo vermelho claro
         }
 
         tvFeedback.visibility = View.VISIBLE
         btnAcao.text = "Próxima Questão"
+
+        // Scroll suave para mostrar o feedback
+        scrollView.post {
+            scrollView.fullScroll(ScrollView.FOCUS_DOWN)
+        }
     }
 
     private fun proximaQuestao() {
@@ -188,8 +200,7 @@ class TesteConhecimentoActivity : AppCompatActivity() {
 
         if (indiceAtual < listaIdsQuestoes.size) {
             carregarQuestao()
-            // Rola para o topo (opcional, se tiver o ID no XML)
-            // scrollView.fullScroll(ScrollView.FOCUS_UP)
+            scrollView.fullScroll(ScrollView.FOCUS_UP)
         } else {
             finalizarJogo()
         }
@@ -197,7 +208,7 @@ class TesteConhecimentoActivity : AppCompatActivity() {
 
     private fun finalizarJogo() {
         val total = listaIdsQuestoes.size
-        val porcentagem = (acertos * 100) / total
+        val porcentagem = if (total > 0) (acertos * 100) / total else 0
 
         val mensagem = if (porcentagem >= 70) {
             "Parabéns! Você tem um ótimo conhecimento."
@@ -210,7 +221,7 @@ class TesteConhecimentoActivity : AppCompatActivity() {
             .setMessage("Você acertou $acertos de $total questões.\n\n$mensagem")
             .setCancelable(false)
             .setPositiveButton("Tentar Novamente") { _, _ ->
-                iniciarJogo() // Reinicia tudo
+                iniciarJogo()
             }
             .setNegativeButton("Sair") { _, _ ->
                 finish()
@@ -224,7 +235,6 @@ class TesteConhecimentoActivity : AppCompatActivity() {
         if (isCorreto) {
             rb.setTextColor(Color.parseColor("#2E7D32")) // Verde Escuro
             rb.setTypeface(null, android.graphics.Typeface.BOLD)
-            // Se quiser mudar a bolinha:
             rb.buttonTintList = ColorStateList.valueOf(Color.parseColor("#2E7D32"))
         } else {
             rb.setTextColor(Color.RED)

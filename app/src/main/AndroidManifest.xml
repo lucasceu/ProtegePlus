@@ -74,6 +74,9 @@
 
         <activity android:name=".ListaTelefonesActivity" android:exported="false" />
 
+        <activity android:name=".SbvActivity" android:exported="false" />
+        <activity android:name=".DetalheSbvActivity" android:exported="false" />
+
     </application>
 
 </manifest>

@@ -69,16 +69,19 @@ class VerificadorSintomasAdapter(
         private val ivChevron: ImageView = itemView.findViewById(R.id.ivChevron)
 
         fun bind(separator: SintomaListItem.Separator) {
-            // Exibe apenas o nome (sem números)
+            // Define o Texto
             tvHeader.text = separator.letter
 
-            // Define o ícone correto
+            // Define o Ícone da Categoria
             ivIcon.setImageResource(separator.iconResId)
 
-            // Gira a seta
+            // Lógica de Rotação da Seta
+            // Assumindo que o ícone original (no XML) aponta para a DIREITA (>)
             if (separator.isExpanded) {
-                ivChevron.rotation = 180f
+                // Se aberto, gira 90 graus (Aponta para BAIXO)
+                ivChevron.rotation = 90f
             } else {
+                // Se fechado, fica em 0 graus (Aponta para DIREITA)
                 ivChevron.rotation = 0f
             }
 
@@ -97,15 +100,21 @@ class VerificadorSintomasAdapter(
             tvNome.text = sintomaCheck.item.nome
             tvCodigo.text = "(${sintomaCheck.item.codigo})"
 
+            // Remove listener antigo para evitar loops ao reciclar a view
             cbSintoma.setOnCheckedChangeListener(null)
             cbSintoma.isChecked = sintomaCheck.isChecked
 
+            // Clique no item inteiro (Card) ativa o checkbox
             val clickListener = View.OnClickListener {
                 sintomaCheck.isChecked = !sintomaCheck.isChecked
                 cbSintoma.isChecked = sintomaCheck.isChecked
             }
             itemView.setOnClickListener(clickListener)
-            cbSintoma.setOnClickListener { sintomaCheck.isChecked = cbSintoma.isChecked }
+
+            // Clique direto no checkbox também atualiza o modelo
+            cbSintoma.setOnClickListener {
+                sintomaCheck.isChecked = cbSintoma.isChecked
+            }
         }
     }
 }
