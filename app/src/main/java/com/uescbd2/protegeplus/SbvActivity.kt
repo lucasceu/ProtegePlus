@@ -89,7 +89,7 @@ class SbvActivity : AppCompatActivity() {
         }
 
         // Agrupa por CATEGORIA
-        val mapaAgrupado = itensFiltrados.groupBy { it.categoria }.toSortedMap()
+        val mapaAgrupado = itensFiltrados.groupBy { it.categoria.trim() }.toSortedMap()
 
         val listaDisplay = mutableListOf<SbvListItem>()
 
